@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { LISTINGS } from '../data/listings';
+import { useListings } from '../hooks/useListings';
 import ListingCard from '../components/ListingCard';
 import Footer from '../components/Footer';
 import { ChevronLeft, ArrowLeft } from 'lucide-react';
@@ -8,9 +8,10 @@ import { useMemo } from 'react';
 export default function CategoryListings() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
+  const { listings: LISTINGS, loading } = useListings();
 
   const filteredListings = useMemo(() => {
-    if (!categoryId) return [];
+    if (!categoryId || !LISTINGS) return [];
 
     if (categoryId === 'recommended') {
       return LISTINGS.slice(0, 21);
@@ -24,7 +25,7 @@ export default function CategoryListings() {
 
     // Default: filter by exact category label if it matches
     return LISTINGS.filter(l => l.category.toLowerCase().replace(/\s+/g, '-') === categoryId);
-  }, [categoryId]);
+  }, [categoryId, LISTINGS]);
 
   const title = useMemo(() => {
     if (categoryId === 'recommended') return 'Recommended';
@@ -32,9 +33,9 @@ export default function CategoryListings() {
     if (categoryId === 'near-msu-iit') return 'Near MSU-IIT';
     
     // Convert kebab-case back to Title Case if possible, or just the category name
-    const listing = LISTINGS.find(l => l.category.toLowerCase().replace(/\s+/g, '-') === categoryId);
+    const listing = LISTINGS?.find(l => l.category.toLowerCase().replace(/\s+/g, '-') === categoryId);
     return listing ? listing.category : 'Listings';
-  }, [categoryId]);
+  }, [categoryId, LISTINGS]);
 
   return (
     <div className="min-h-screen bg-white">

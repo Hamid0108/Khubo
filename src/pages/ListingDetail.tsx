@@ -1,5 +1,5 @@
-import { LISTINGS } from '../data/listings';
-import { X, Star, ShieldCheck, MapPin, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowLeft, Coffee, Utensils, Wifi, Tv, ArrowDownUp, Briefcase, Car, Fence, Refrigerator, Microwave, Cctv, Search, Layers, Navigation, Home, Maximize, Heart } from 'lucide-react';
+import { useListing } from '../hooks/useListing';
+import { X, Star, ShieldCheck, MapPin, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowLeft, Coffee, Utensils, Wifi, Tv, ArrowDownUp, Briefcase, Car, Fence, Refrigerator, Microwave, Cctv, Search, Layers, Navigation, Home, Maximize, Heart, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -137,7 +137,7 @@ const Calendar = ({
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const listing = useMemo(() => LISTINGS.find(l => l.id === id), [id]);
+  const { listing, loading } = useListing(id);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -153,6 +153,14 @@ export default function ListingDetail() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-[#17294F]" />
+      </div>
+    );
+  }
 
   if (!listing) {
     return (

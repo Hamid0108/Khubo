@@ -4,7 +4,7 @@ import ListingCard from '../components/ListingCard';
 import BottomNav from '../components/BottomNav';
 import Filters, { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
-import { LISTINGS } from '../data/listings';
+import { useListings } from '../hooks/useListings';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
 
 export default function Home() {
+  const { listings: LISTINGS, loading: listingsLoading } = useListings();
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -106,6 +107,7 @@ export default function Home() {
   }, [displaySearch]);
 
   const filteredListings = useMemo(() => {
+    if (!LISTINGS) return [];
     let result = [...LISTINGS];
 
     // Filter by Category
@@ -150,7 +152,7 @@ export default function Home() {
     }
 
     return result;
-  }, [selectedCategory, filters, searchQuery]);
+  }, [selectedCategory, filters, searchQuery, LISTINGS]);
 
   const handleListingClick = (id: string) => {
     navigate(`/listing/${id}`);

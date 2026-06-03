@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Search, MapPin, TrendingUp, Building, CornerDownLeft, Star } from 'lucide-react';
-import { LISTINGS } from '../data/listings';
+import { useListings } from '../hooks/useListings';
 import { Listing } from '../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,13 +19,15 @@ export default function SearchDropdown({
 }: SearchDropdownProps) {
   const navigate = useNavigate();
   const query = searchQuery.trim().toLowerCase();
+  const { listings: LISTINGS } = useListings();
 
   // Get matching results
   const matches = useMemo(() => {
+    const dataListings = LISTINGS || [];
     if (!query) {
       return {
         popular: ['Near MSU-IIT', 'Solo Room', 'All Female', 'Affordable', 'With Aircon', 'WiFi Included'],
-        listings: LISTINGS.slice(0, 2),
+        listings: dataListings.slice(0, 2),
       };
     }
 
@@ -35,7 +37,7 @@ export default function SearchDropdown({
       .slice(0, 4);
 
     // Filter listings
-    const matchingListings = LISTINGS.filter(listing => 
+    const matchingListings = dataListings.filter(listing => 
       listing.title.toLowerCase().includes(query) ||
       listing.location.toLowerCase().includes(query) ||
       listing.category.toLowerCase().includes(query) ||
@@ -46,7 +48,7 @@ export default function SearchDropdown({
       popular: matchingCategories,
       listings: matchingListings,
     };
-  }, [query]);
+  }, [query, LISTINGS]);
 
   const handleSuggestionClick = (text: string) => {
     setSearchQuery(text);

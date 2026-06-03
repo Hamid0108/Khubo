@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { LISTINGS } from '../data/listings';
+import { useListings } from '../hooks/useListings';
 import ListingCard from '../components/ListingCard';
 import Navbar from '../components/Navbar';
 import { Search, MapPin, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowLeft, MoreHorizontal, Map as MapIcon, X, Calendar as CalendarIcon, Wallet, ChevronDown } from 'lucide-react';
@@ -12,6 +12,7 @@ import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
 
 export default function Maps() {
+  const { listings: LISTINGS } = useListings();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [selectedListing, setSelectedListing] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function Maps() {
   };
 
   const handleSelectListing = (id: string) => {
-    const listing = LISTINGS.find(l => l.id === id);
+    const listing = LISTINGS?.find(l => l.id === id);
     if (listing) {
       handleListingClick(listing);
     }
@@ -48,11 +49,12 @@ export default function Maps() {
   };
 
   const filteredListings = useMemo(() => {
-    return LISTINGS.filter(listing => 
+    const dataListings = LISTINGS || [];
+    return dataListings.filter(listing => 
       listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.location.toLowerCase().includes(searchQuery.toLowerCase())
     ).filter(l => l.lat && l.lng); // Only show listings with coordinates
-  }, [searchQuery]);
+  }, [searchQuery, LISTINGS]);
 
   useEffect(() => {
     if (map.current) return;
