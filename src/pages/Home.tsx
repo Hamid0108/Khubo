@@ -7,7 +7,7 @@ import Filters, { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
 import { useListings } from '../hooks/useListings';
 import { motion, AnimatePresence } from 'motion/react';
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useDeferredValue } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight, Search, MapPin, Calendar as CalendarIcon, Wallet, ChevronDown, X } from 'lucide-react';
 import MobileSearchOverlay from '../components/MobileSearchOverlay';
@@ -16,11 +16,26 @@ import SearchDropdown from '../components/SearchDropdown';
 import { useSearchHistory } from '../hooks/useSearchHistory';
 import { SearchHistory } from '../components/SearchHistory';
 
+const POPULAR_LOCATIONS = ['Iligan City', 'Cagayan de Oro', 'Butuan City'];
+
+const CAROUSEL_ITEM_CLASS = "w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start";
+
+const ListingCarouselSkeleton = ({ prefix }: { prefix: string }) => (
+  <>
+    {Array.from({ length: 5 }).map((_, i) => (
+      <div key={`skeleton-${prefix}-${i}`} className={CAROUSEL_ITEM_CLASS}>
+        <ListingCardSkeleton />
+      </div>
+    ))}
+  </>
+);
+
 export default function Home() {
   const { listings: LISTINGS, loading: listingsLoading } = useListings();
   const { history, addSearch, removeSearch } = useSearchHistory();
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isStickySearchActive, setIsStickySearchActive] = useState(false);
   const [hideStickyDropdown, setHideStickyDropdown] = useState(false);
@@ -126,8 +141,8 @@ export default function Home() {
     result = result.filter(listing => listing.rating >= filters.minRating);
 
     // Filter by Search Query (keywords or numbers)
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase().trim();
+    if (deferredSearchQuery.trim() !== '') {
+      const query = deferredSearchQuery.toLowerCase().trim();
       result = result.filter(listing => {
         return (
           listing.title.toLowerCase().includes(query) ||
@@ -156,7 +171,7 @@ export default function Home() {
     }
 
     return result;
-  }, [selectedCategory, filters, searchQuery, LISTINGS]);
+  }, [selectedCategory, filters, deferredSearchQuery, LISTINGS]);
 
   const handleListingClick = (id: string) => {
     navigate(`/listing/${id}`);
@@ -316,7 +331,7 @@ export default function Home() {
                                       />
                                     </div>
                                     <div className="space-y-1">
-                                      {['Iligan City', 'Cagayan de Oro', 'Butuan City'].map((loc) => (
+                                      {POPULAR_LOCATIONS.map((loc) => (
                                         <button 
                                           key={loc}
                                           onClick={() => { setSearchQuery(loc); setStickyActiveDropdown(null); }}
@@ -472,7 +487,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center justify-between w-full"
+                className="flex items-center justify-between w-full bg-white"
               >
                 <div className="flex-1 min-w-0 relative group/cat pl-2 sm:pl-0">
                   <Categories selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
@@ -524,14 +539,10 @@ export default function Home() {
             >
               <AnimatePresence mode="popLayout">
                 {listingsLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <div key={`skeleton-rec-${i}`} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
-                      <ListingCardSkeleton />
-                    </div>
-                  ))
+                  <ListingCarouselSkeleton prefix="rec" />
                 ) : (
                   filteredListings.slice(0, 21).map((listing) => (
-                    <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                    <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
                       <ListingCard 
                         listing={listing} 
                         onClick={() => handleListingClick(listing.id)}
@@ -578,14 +589,10 @@ export default function Home() {
               >
                 <AnimatePresence mode="popLayout">
                   {listingsLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <div key={`skeleton-top-${i}`} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
-                        <ListingCardSkeleton />
-                      </div>
-                    ))
+                    <ListingCarouselSkeleton prefix="top" />
                   ) : (
                     filteredListings.slice(7, 28).map((listing) => (
-                      <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                      <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
                         <ListingCard 
                           listing={listing} 
                           onClick={() => handleListingClick(listing.id)}
@@ -633,14 +640,10 @@ export default function Home() {
               >
                 <AnimatePresence mode="popLayout">
                   {listingsLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <div key={`skeleton-msu-${i}`} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
-                        <ListingCardSkeleton />
-                      </div>
-                    ))
+                    <ListingCarouselSkeleton prefix="msu" />
                   ) : (
                     filteredListings.slice(14, 35).map((listing) => (
-                      <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                      <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
                         <ListingCard 
                           listing={listing} 
                           onClick={() => handleListingClick(listing.id)}

@@ -3,7 +3,6 @@ import { Listing } from '../types';
 import { motion } from 'motion/react';
 
 interface ListingCardProps {
-  key?: string | number;
   listing: Listing;
   onClick: () => void;
   compact?: boolean;

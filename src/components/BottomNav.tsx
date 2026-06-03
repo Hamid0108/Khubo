@@ -4,7 +4,6 @@ import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
-import { ThemeToggle } from './ThemeToggle';
 
 export default function BottomNav() {
   const location = useLocation();
@@ -61,16 +60,13 @@ export default function BottomNav() {
 
   return (
     <div 
-      className="fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] max-w-[420px]"
+      className="fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] max-w-[420px] pointer-events-none"
     >
-      <div className="absolute -top-12 left-0 z-50">
-        <ThemeToggle />
-      </div>
       <motion.nav 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-[#000000]/35 backdrop-blur-xl border border-white/10 rounded-full px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-around gap-1"
+        className="bg-[#000000]/35 backdrop-blur-xl border border-white/10 rounded-full px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-around gap-1 pointer-events-auto"
       >
         {items.map((item, idx) => {
           const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '') || (item.path !== '/' && location.pathname.startsWith(item.path));

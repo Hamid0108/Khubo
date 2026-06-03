@@ -207,40 +207,17 @@ export default function ListingDetail() {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const HostSection = () => {
-    const defaultHost = {
-      name: 'Khubo Resident',
-      image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
-      reviews: 12,
-      rating: 4.95,
-      hostingDuration: '3 months',
-      work: 'Property Management',
-      location: 'Iligan City, Philippines',
-      tenantCount: 15
-    };
-
-    const displayHost = listing.host || defaultHost;
-
-    return (
-      <HostProfile 
-        name={displayHost.name}
-        image={displayHost.image}
-        reviews={displayHost.reviews}
-        rating={displayHost.rating}
-        hostingDuration={displayHost.hostingDuration}
-        work={displayHost.work}
-        location={displayHost.location}
-        tenantCount={displayHost.tenantCount || defaultHost.tenantCount}
-        onMessageClick={() => {
-          if (!isAuthenticated) {
-            setIsAuthModalOpen(true);
-          } else {
-            showToast('Message sent to host successfully!');
-          }
-        }}
-      />
-    );
+  const defaultHost = {
+    name: 'Khubo Resident',
+    image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
+    reviews: 12,
+    rating: 4.95,
+    hostingDuration: '3 months',
+    work: 'Property Management',
+    location: 'Iligan City, Philippines',
+    tenantCount: 15
   };
+  const displayHost = listing.host || defaultHost;
 
   return (
     <div className="min-h-screen bg-neutral-50 md:bg-white pb-32">
@@ -497,7 +474,23 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            <HostSection />
+            <HostProfile 
+              name={displayHost.name}
+              image={displayHost.image}
+              reviews={displayHost.reviews}
+              rating={displayHost.rating}
+              hostingDuration={displayHost.hostingDuration}
+              work={displayHost.work}
+              location={displayHost.location}
+              tenantCount={displayHost.tenantCount || defaultHost.tenantCount}
+              onMessageClick={() => {
+                if (!isAuthenticated) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  showToast('Message sent to host successfully!');
+                }
+              }}
+            />
             <ReviewBreakdown 
               rating={listing.rating}
               totalReviews={listing.reviews.length}
@@ -660,6 +653,7 @@ export default function ListingDetail() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         startDate={startDate}
+        endDate={null}
         onSelect={(date) => setStartDate(date)}
       />
 

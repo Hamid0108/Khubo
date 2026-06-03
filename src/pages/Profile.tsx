@@ -148,7 +148,7 @@ export default function Profile() {
     setIsSigningUp(false);
   };
 
-  const fetchMyListings = async () => {
+  const fetchMyListings = React.useCallback(async () => {
     if (!user) return;
     setLoadingListings(true);
     const { data, error } = await supabase
@@ -161,13 +161,13 @@ export default function Profile() {
       setMyListings(data || []);
     }
     setLoadingListings(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user && isLandlord) {
       fetchMyListings();
     }
-  }, [user, isLandlord]);
+  }, [user, isLandlord, fetchMyListings]);
 
   return (
     <div className="min-h-screen bg-[#F9F9F9] dark:bg-neutral-950 pb-32 transition-colors duration-300">

@@ -57,50 +57,7 @@ export default function Maps() {
     ).filter(l => l.lat && l.lng); // Only show listings with coordinates
   }, [searchQuery, LISTINGS]);
 
-  useEffect(() => {
-    if (map.current) return;
-
-    const apiKey = import.meta.env.VITE_MAPTILER_API_KEY || 'JNCQIsX7HW4jPDQX491R';
-    maptilersdk.config.apiKey = apiKey || '';
-
-    map.current = new maptilersdk.Map({
-      container: mapContainer.current!,
-      style: maptilersdk.MapStyle.STREETS,
-      center: [124.2442, 8.2415], // Iligan City center
-      zoom: 13,
-      navigationControl: false,
-      geolocateControl: true,
-    });
-
-    // Intercept and resolve missing style images to suppress MapTiler road/space warnings in console
-    map.current.on('styleimagemissing', (e: any) => {
-      try {
-        if (e && e.id && map.current) {
-          const width = 1;
-          const height = 1;
-          const data = new Uint8Array([0, 0, 0, 0]);
-          map.current.addImage(e.id, { width, height, data });
-        }
-      } catch (err) {
-        // ignore any errors adding dummy fallback
-      }
-    });
-
-    map.current.on('load', () => {
-      updateMarkers();
-    });
-  }, []);
-
-  useEffect(() => {
-    // If map exists, we need to tell it to resize when sidebar collapses/expands
-    if (map.current) {
-      setTimeout(() => {
-        map.current?.resize();
-      }, 305); // slightly more than the transition duration
-    }
-  }, [isSidebarCollapsed]);
-
-  const updateMarkers = () => {
+  const updateMarkers = React.useCallback(() => {
     if (!map.current) return;
 
     // Remove existing markers
@@ -160,11 +117,59 @@ export default function Maps() {
         markers.current[listing.id] = marker;
       }
     });
-  };
+  }, [filteredListings, selectedListing]);
+
+  const updateMarkersRef = useRef(updateMarkers);
+  useEffect(() => {
+    updateMarkersRef.current = updateMarkers;
+  }, [updateMarkers]);
+
+  useEffect(() => {
+    if (map.current) return;
+
+    const apiKey = import.meta.env.VITE_MAPTILER_API_KEY || 'JNCQIsX7HW4jPDQX491R';
+    maptilersdk.config.apiKey = apiKey || '';
+
+    map.current = new maptilersdk.Map({
+      container: mapContainer.current!,
+      style: maptilersdk.MapStyle.STREETS,
+      center: [124.2442, 8.2415], // Iligan City center
+      zoom: 13,
+      navigationControl: false,
+      geolocateControl: true,
+    });
+
+    // Intercept and resolve missing style images to suppress MapTiler road/space warnings in console
+    map.current.on('styleimagemissing', (e: any) => {
+      try {
+        if (e && e.id && map.current) {
+          const width = 1;
+          const height = 1;
+          const data = new Uint8Array([0, 0, 0, 0]);
+          map.current.addImage(e.id, { width, height, data });
+        }
+      } catch (err) {
+        // ignore any errors adding dummy fallback
+      }
+    });
+
+    map.current.on('load', () => {
+      updateMarkersRef.current();
+    });
+  }, []);
+
+  useEffect(() => {
+    // If map exists, we need to tell it to resize when sidebar collapses/expands
+    if (map.current) {
+      setTimeout(() => {
+        map.current?.resize();
+      }, 305); // slightly more than the transition duration
+    }
+  }, [isSidebarCollapsed]);
 
   useEffect(() => {
     updateMarkers();
-  }, [filteredListings, selectedListing]);
+  }, [updateMarkers]);
 
   const handleListingClick = (listing: Listing) => {
     setSelectedListing(listing.id);
