@@ -13,9 +13,12 @@ import { ChevronLeft, ChevronRight, ArrowRight, Search, MapPin, Calendar as Cale
 import MobileSearchOverlay from '../components/MobileSearchOverlay';
 import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
+import { useSearchHistory } from '../hooks/useSearchHistory';
+import { SearchHistory } from '../components/SearchHistory';
 
 export default function Home() {
   const { listings: LISTINGS, loading: listingsLoading } = useListings();
+  const { history, addSearch, removeSearch } = useSearchHistory();
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -179,6 +182,11 @@ export default function Home() {
         onOpenMobileSearch={() => setIsMobileSearchOpen(true)}
         suppressDropdown={displaySearch}
       />
+      
+      {/* Search History section under Hero */}
+      <div className="max-w-[2520px] mx-auto xl:px-12 md:px-12 sm:px-4 px-4 -mt-10 mb-4">
+        <SearchHistory history={history} onSelect={(q) => { setSearchQuery(q); addSearch(q); }} onRemove={removeSearch} />
+      </div>
       <MobileSearchOverlay 
         isOpen={isMobileSearchOpen}
         onClose={() => setIsMobileSearchOpen(false)}
@@ -237,6 +245,7 @@ export default function Home() {
                           )}
                           <button 
                             onClick={() => {
+                              addSearch(searchQuery);
                               setIsStickySearchActive(false);
                             }}
                             className="bg-[#17294F] p-1.5 sm:p-2 md:p-2.5 rounded-full transition-all duration-200 shadow-md ml-0.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white flex-shrink-0 flex items-center justify-center cursor-pointer"
@@ -437,6 +446,7 @@ export default function Home() {
                             if (isMobile) {
                                 setIsMobileSearchOpen(true);
                             } else {
+                                addSearch(searchQuery);
                                 setSearchQuery('');
                                 setIsStickySearchActive(true);
                             }

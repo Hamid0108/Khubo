@@ -1,4 +1,5 @@
 import { useListing } from '../hooks/useListing';
+import { useToast } from '../components/ToastProvider';
 import { X, Star, ShieldCheck, MapPin, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowLeft, Coffee, Utensils, Wifi, Tv, ArrowDownUp, Briefcase, Car, Fence, Refrigerator, Microwave, Cctv, Search, Layers, Navigation, Home, Maximize, Heart, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -139,6 +140,7 @@ export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { listing, loading } = useListing(id);
+  const { showToast } = useToast();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -233,7 +235,7 @@ export default function ListingDetail() {
           if (!isAuthenticated) {
             setIsAuthModalOpen(true);
           } else {
-            console.log("Messaging host");
+            showToast('Message sent to host successfully!');
           }
         }}
       />
@@ -340,7 +342,10 @@ export default function ListingDetail() {
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">{listing.title}</h1>
           <div className="hidden md:flex items-center shrink-0">
             <button 
-              onClick={() => setIsSaved(!isSaved)}
+              onClick={() => {
+                setIsSaved(!isSaved);
+                if (!isSaved) showToast('Listing saved to your wishlist!');
+              }}
               className="flex items-center gap-1.5 hover:bg-neutral-100 px-3 py-1.5 rounded-lg transition-colors font-semibold underline decoration-transparent hover:decoration-neutral-900 underline-offset-4"
             >
               <Heart 

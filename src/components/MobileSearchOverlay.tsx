@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Shield, Star, Sparkles, MapPin, Globe, Mic, Delete, CornerDownLeft, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSearchHistory } from '../hooks/useSearchHistory';
 
 interface MobileSearchOverlayProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function MobileSearchOverlay({
 }: MobileSearchOverlayProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addSearch } = useSearchHistory();
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const [activeTab, setActiveTab] = useState<'properties' | 'roommates'>(defaultTab);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +70,7 @@ export default function MobileSearchOverlay({
   const suggestions = activeTab === 'properties' ? propertySuggestions : roommateSuggestions;
 
   const handleSearchSubmit = (queryToSubmit: string) => {
+    addSearch(queryToSubmit);
     setSearchQuery(queryToSubmit);
     onClose();
 

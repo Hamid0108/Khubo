@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
+import { ThemeToggle } from './ThemeToggle';
 
 export default function BottomNav() {
   const location = useLocation();
@@ -62,6 +63,9 @@ export default function BottomNav() {
     <div 
       className="fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] max-w-[420px]"
     >
+      <div className="absolute -top-12 left-0 z-50">
+        <ThemeToggle />
+      </div>
       <motion.nav 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

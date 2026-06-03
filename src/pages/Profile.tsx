@@ -36,6 +36,13 @@ export default function Profile() {
   const [hasLandlordAccount, setHasLandlordAccount] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   
+  const menuItems = [
+    { title: 'Notifications', icon: Bell, action: () => alert('Notifications clicked') },
+    { title: 'Account settings', icon: Settings, action: () => alert('Account settings clicked') },
+    { title: 'Languages & currency', icon: Globe, action: () => alert('Languages & currency clicked') },
+    { title: 'Help Center', icon: HelpCircle, action: () => alert('Help Center clicked') },
+  ];
+  
   const [myListings, setMyListings] = useState<any[]>([]);
   const [loadingListings, setLoadingListings] = useState(false);
   const [editingListing, setEditingListing] = useState<any | null>(null);
@@ -49,6 +56,8 @@ export default function Profile() {
 
   const [profileName, setProfileName] = useState('Micheal B. Jordan');
   const [isEditingName, setIsEditingName] = useState(false);
+  const [profileBio, setProfileBio] = useState('"Clean and organized. Looking for a place near the city center. I cook often and enjoy a shared meal!"');
+  const [isEditingBio, setIsEditingBio] = useState(false);
   const [profileTags, setProfileTags] = useState(['Introvert', 'Pet-friendly', 'Night owl', 'Studious', 'Non-smoker']);
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [newTagInput, setNewTagInput] = useState('');
@@ -161,7 +170,7 @@ export default function Profile() {
   }, [user, isLandlord]);
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] pb-32">
+    <div className="min-h-screen bg-[#F9F9F9] dark:bg-neutral-950 pb-32 transition-colors duration-300">
       {/* Hero Section */}
       <div className="relative min-h-[440px] md:h-[500px] w-full bg-black flex flex-col justify-end">
         {/* Background Image */}
@@ -278,8 +287,23 @@ export default function Profile() {
           </div>
 
           {/* Right Quote */}
-          <div className="hidden md:block w-full md:w-[45%] lg:w-[40%] text-white text-xl lg:text-2xl font-medium leading-relaxed drop-shadow-lg p-6">
-            "Clean and organized. Looking for a place near the city center. I cook often and enjoy a shared meal!"
+          <div className="hidden md:block w-full md:w-[45%] lg:w-[40%] text-white text-xl lg:text-2xl font-medium leading-relaxed drop-shadow-lg p-6 group">
+             {isEditingBio ? (
+               <textarea
+                 autoFocus
+                 value={profileBio}
+                 onChange={(e) => setProfileBio(e.target.value)}
+                 onBlur={() => setIsEditingBio(false)}
+                 className="w-full h-full bg-black/20 backdrop-blur-sm rounded-xl p-4 outline-none border border-white/20 resize-none"
+               />
+             ) : (
+               <div className="relative cursor-pointer hover:bg-white/10 p-2 rounded-xl transition" onClick={() => setIsEditingBio(true)}>
+                 {profileBio}
+                 <button className="absolute -top-4 right-0 opacity-0 group-hover:opacity-100 transition p-1 hover:bg-white/20 rounded-full">
+                   <Edit2 size={16} />
+                 </button>
+               </div>
+             )}
           </div>
         </div>
       </div>
@@ -529,45 +553,21 @@ export default function Profile() {
               </div>
             </div>
             
-            {/* Notifications */}
-            <button className="flex items-center gap-5 text-left w-full group cursor-pointer">
-              <div className="text-neutral-800 group-hover:text-[#2252D6] transition-colors duration-200">
-                <Bell className="w-6 h-6 stroke-[1.8]" />
-              </div>
-              <span className="text-lg font-medium text-neutral-800 group-hover:text-neutral-950 transition-colors duration-200">
-                Notifications
-              </span>
-            </button>
-
-            {/* Account settings */}
-            <button className="flex items-center gap-5 text-left w-full group cursor-pointer">
-              <div className="text-neutral-800 group-hover:text-[#2252D6] transition-colors duration-200">
-                <Settings className="w-6 h-6 stroke-[1.8]" />
-              </div>
-              <span className="text-lg font-medium text-neutral-800 group-hover:text-neutral-950 transition-colors duration-200">
-                Account settings
-              </span>
-            </button>
-
-            {/* Languages & currency */}
-            <button className="flex items-center gap-5 text-left w-full group cursor-pointer">
-              <div className="text-neutral-800 group-hover:text-[#2252D6] transition-colors duration-200">
-                <Globe className="w-6 h-6 stroke-[1.8]" />
-              </div>
-              <span className="text-lg font-medium text-neutral-800 group-hover:text-neutral-950 transition-colors duration-200">
-                Languages & currency
-              </span>
-            </button>
-
-            {/* Help Center */}
-            <button className="flex items-center gap-5 text-left w-full group cursor-pointer">
-              <div className="text-neutral-800 group-hover:text-[#2252D6] transition-colors duration-200">
-                <HelpCircle className="w-6 h-6 stroke-[1.8]" />
-              </div>
-              <span className="text-lg font-medium text-neutral-800 group-hover:text-neutral-950 transition-colors duration-200">
-                Help Center
-              </span>
-            </button>
+            {/* Notifications, Account, Language, Help */}
+            {menuItems.map((item) => (
+              <button
+                key={item.title}
+                onClick={item.action}
+                className="flex items-center gap-5 text-left w-full group cursor-pointer"
+              >
+                <div className="text-neutral-800 group-hover:text-[#2252D6] transition-colors duration-200">
+                  <item.icon className="w-6 h-6 stroke-[1.8]" />
+                </div>
+                <span className="text-lg font-medium text-neutral-800 group-hover:text-neutral-950 transition-colors duration-200">
+                  {item.title}
+                </span>
+              </button>
+            ))}
 
             {/* Separator before Log out */}
             <div className="h-px bg-neutral-100 my-2" />
