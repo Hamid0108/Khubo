@@ -15,20 +15,12 @@ export default function ManageListings() {
   const navigate = useNavigate();
 
   const fetchMyListings = async () => {
-    if (!user) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .eq('host_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching listings:', error);
-    } else {
-      setListings(data || []);
-    }
-    setLoading(false);
+    // Mock listings fetch
+    setTimeout(() => {
+      setListings([]);
+      setLoading(false);
+    }, 500);
   };
 
   useEffect(() => {

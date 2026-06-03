@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Globe, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 
 export function AuthModal({ isOpen, onClose, onLogin }: { isOpen: boolean; onClose: () => void, onLogin?: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,6 +11,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { signIn } = useAuth();
 
   if (!isOpen) return null;
 
@@ -19,30 +20,13 @@ export function AuthModal({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
     setError(null);
     setIsLoading(true);
 
-    try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        if (onLogin) onLogin();
-        onClose();
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        // Optionally notify user to check email instead of logging in directly
-        if (onLogin) onLogin();
-        onClose();
-      }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during authentication.');
-    } finally {
+    // Mock authentication
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      signIn(email);
+      if (onLogin) onLogin();
+      onClose();
+    }, 1000);
   };
 
   return (
