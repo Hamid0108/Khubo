@@ -271,7 +271,7 @@ export default function RoommateFinder() {
                               setActiveStickyDropdown(activeStickyDropdown === 'location' ? null : 'location');
                             }}
                             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setActiveStickyDropdown(activeStickyDropdown === 'location' ? null : 'location'))}
-                            className={`w-full flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer group focus-visible:outline-none ${
+                            className={`w-full flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer select-none group focus-visible:outline-none ${
                                 activeStickyDropdown === 'location' 
                                 ? 'bg-neutral-100 rounded-full text-[#17294F] relative z-[60] shadow-sm' 
                                 : 'hover:bg-neutral-50 rounded-full'
@@ -337,7 +337,7 @@ export default function RoommateFinder() {
                               setActiveStickyDropdown(activeStickyDropdown === 'budget' ? null : 'budget');
                             }}
                             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setActiveStickyDropdown(activeStickyDropdown === 'budget' ? null : 'budget'))}
-                            className={`w-full flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer group focus-visible:outline-none ${
+                            className={`w-full flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer select-none group focus-visible:outline-none ${
                                 activeStickyDropdown === 'budget' 
                                 ? 'bg-neutral-100 rounded-full text-[#17294F] relative z-[60] shadow-sm' 
                                 : 'hover:bg-neutral-50 rounded-full'
@@ -368,7 +368,7 @@ export default function RoommateFinder() {
                                       <button 
                                         key={range.label}
                                         onClick={() => { setSearchQuery(range.val); setActiveStickyDropdown(null); }}
-                                        className="flex flex-col p-2 rounded-lg bg-neutral-50 border border-neutral-100 hover:border-[#17294F]/30 hover:bg-white transition-all text-left"
+                                        className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                                       >
                                         <span className="font-medium text-neutral-900 text-xs">{range.label}</span>
                                       </button>

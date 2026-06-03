@@ -253,15 +253,6 @@ export default function RoommateHero({
                         className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 p-4 z-50 text-left"
                       >
                         <div className="space-y-3">
-                          <div className="relative mb-3">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-neutral-400">₱</span>
-                            <input 
-                              type="text"
-                              placeholder="Any budget..."
-                              className="w-full bg-neutral-100 border-none rounded-xl py-2.5 pl-8 pr-4 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#2252D6]/20 transition-all placeholder:text-neutral-400"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
                           <div className="grid grid-cols-1 gap-1">
                             {[
                               { label: '₱1k - ₱3k' },
@@ -270,8 +261,8 @@ export default function RoommateHero({
                             ].map((range) => (
                               <button 
                                 key={range.label}
-                                onClick={() => { setActiveDropdown(null); navigate('/roommate-finder'); }}
-                                className="flex flex-col p-3 rounded-xl bg-neutral-50 border border-neutral-100 hover:border-[#17294F]/30 hover:bg-white transition-all text-left"
+                                onClick={() => { setActiveDropdown(null); navigate('/roommate'); }}
+                                className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                               >
                                 <span className="font-medium text-neutral-900 text-sm">{range.label}</span>
                               </button>

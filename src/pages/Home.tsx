@@ -272,7 +272,7 @@ export default function Home() {
                               setStickyActiveDropdown(stickyActiveDropdown === 'location' ? null : 'location');
                             }}
                             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setStickyActiveDropdown(stickyActiveDropdown === 'location' ? null : 'location'))}
-                            className={`w-full flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer group focus-visible:outline-none ${
+                            className={`w-full flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer group select-none focus-visible:outline-none ${
                               stickyActiveDropdown === 'location' 
                               ? 'bg-neutral-100 rounded-full text-[#17294F] relative z-[60] shadow-sm' 
                               : 'hover:bg-neutral-50 rounded-full'
@@ -338,7 +338,7 @@ export default function Home() {
                               setStickyActiveDropdown(stickyActiveDropdown === 'dates' ? null : 'dates');
                             }}
                             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setStickyActiveDropdown(stickyActiveDropdown === 'dates' ? null : 'dates'))}
-                            className={`w-full flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-4 py-2 md:py-2 transition-all cursor-pointer group focus-visible:outline-none ${
+                            className={`w-full flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-4 py-2 md:py-2 transition-all cursor-pointer group select-none focus-visible:outline-none ${
                               stickyActiveDropdown === 'dates' 
                               ? 'bg-neutral-100 rounded-full text-black relative z-[60] shadow-sm' 
                               : 'hover:bg-neutral-50 rounded-full'
@@ -385,7 +385,7 @@ export default function Home() {
                               setStickyActiveDropdown(stickyActiveDropdown === 'budget' ? null : 'budget');
                             }}
                             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setStickyActiveDropdown(stickyActiveDropdown === 'budget' ? null : 'budget'))}
-                            className={`w-full flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer group focus-visible:outline-none ${
+                            className={`w-full flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition-all cursor-pointer group select-none focus-visible:outline-none ${
                               stickyActiveDropdown === 'budget' 
                               ? 'bg-neutral-100 rounded-full text-[#17294F] relative z-[60] shadow-sm' 
                               : 'hover:bg-neutral-50 rounded-full'
@@ -407,15 +407,6 @@ export default function Home() {
                                 className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 p-2 md:p-4 z-50 text-left"
                               >
                                 <div className="space-y-2 md:space-y-3">
-                                  <div className="relative mb-2">
-                                    <span className="absolute left-2.5 md:left-3 top-1/2 -translate-y-1/2 text-xs md:text-sm font-bold text-neutral-400">₱</span>
-                                    <input 
-                                      type="text"
-                                      placeholder="Any budget..."
-                                      className="w-full bg-neutral-100 border-none rounded-lg py-1.5 pl-6 pr-2 md:py-2 md:pl-8 md:pr-4 text-xs font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#2252D6]/20 transition-all placeholder:text-neutral-400"
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                  </div>
                                   <div className="grid grid-cols-1 gap-1">
                                     {[
                                       { label: '₱1k - ₱3k', val: '1500' },
@@ -425,7 +416,7 @@ export default function Home() {
                                       <button 
                                         key={range.label}
                                         onClick={() => { setSearchQuery(range.val); setStickyActiveDropdown(null); }}
-                                        className="flex flex-col py-1.5 md:py-2 px-2 md:px-3 hover:bg-neutral-50 rounded-lg transition-all text-left"
+                                        className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                                       >
                                         <span className="font-medium text-neutral-900 text-xs whitespace-nowrap">{range.label}</span>
                                       </button>

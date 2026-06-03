@@ -167,7 +167,7 @@ export default function Hero({
                       aria-label="Location: Location"
                       onClick={() => toggleDropdown('location')}
                       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleDropdown('location'))}
-                      className={`w-full flex items-center justify-between px-1.5 md:pl-6 md:pr-4 py-2.5 md:py-3.5 transition-all cursor-pointer group focus-visible:outline-none ${
+                      className={`w-full flex items-center justify-between px-1.5 md:pl-6 md:pr-4 py-2.5 md:py-3.5 transition-all cursor-pointer group select-none focus-visible:outline-none ${
                         activeDropdown === 'location' 
                         ? 'bg-white rounded-full text-[#17294F] relative z-[60] shadow-[0_-5px_10px_rgba(0,0,0,0.05)] md:shadow-md' 
                         : 'hover:bg-white/5 rounded-full'
@@ -229,7 +229,7 @@ export default function Hero({
                       aria-label="Add dates"
                       onClick={() => toggleDropdown('dates')}
                       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleDropdown('dates'))}
-                      className={`w-full flex items-center justify-between px-1.5 md:pl-6 md:pr-4 py-2.5 md:py-3.5 transition-all cursor-pointer group focus-visible:outline-none ${
+                      className={`w-full flex items-center justify-between px-1.5 md:pl-6 md:pr-4 py-2.5 md:py-3.5 transition-all cursor-pointer group select-none focus-visible:outline-none ${
                         activeDropdown === 'dates' 
                         ? 'bg-white rounded-full text-[#17294F] relative z-[60] shadow-[0_-5px_10px_rgba(0,0,0,0.05)] md:shadow-md' 
                         : 'hover:bg-white/5 rounded-full'
@@ -268,7 +268,7 @@ export default function Hero({
                       aria-label="Add budget"
                       onClick={() => toggleDropdown('budget')}
                       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleDropdown('budget'))}
-                      className={`w-full flex items-center justify-between px-1.5 md:pl-6 md:pr-4 py-2.5 md:py-3.5 transition-all cursor-pointer group focus-visible:outline-none ${
+                      className={`w-full flex items-center justify-between px-1.5 md:pl-6 md:pr-4 py-2.5 md:py-3.5 transition-all cursor-pointer group select-none focus-visible:outline-none ${
                         activeDropdown === 'budget' 
                         ? 'bg-white rounded-full text-[#17294F] relative z-[60] shadow-[0_-5px_10px_rgba(0,0,0,0.05)] md:shadow-md' 
                         : 'hover:bg-white/5 rounded-full'

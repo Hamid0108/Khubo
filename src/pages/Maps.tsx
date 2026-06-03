@@ -179,7 +179,7 @@ export default function Maps() {
   return (
     <div className="flex flex-col h-screen bg-white relative">
       <button 
-        onClick={() => navigate('/')}
+        onClick={() => navigate(-1)}
         className="md:hidden absolute top-20 left-4 z-50 p-2 bg-white/90 backdrop-blur-md shadow-lg pointer-events-auto active:scale-90 transition-transform rounded-full"
       >
         <ArrowLeft size={24} className="text-neutral-900" />
@@ -191,7 +191,7 @@ export default function Maps() {
         {/* Desktop Back Button */}
         <div className="hidden md:flex flex-1 justify-start">
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(-1)}
             className="p-2 -ml-2 rounded-full hover:bg-neutral-100 transition-colors"
             aria-label="Go back"
           >
