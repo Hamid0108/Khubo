@@ -13,10 +13,11 @@ const MapTilerView: React.FC<MapTilerViewProps> = ({ lat, lng, title }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
 
+  const apiKey = import.meta.env.VITE_MAPTILER_API_KEY || 'JNCQIsX7HW4jPDQX491R';
+
   useEffect(() => {
     if (map.current) return; // stops map from initializing more than once
 
-    const apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
     if (!apiKey) {
       console.warn('MapTiler API Key is missing. Please add VITE_MAPTILER_API_KEY to your secrets.');
     }
@@ -102,7 +103,7 @@ const MapTilerView: React.FC<MapTilerViewProps> = ({ lat, lng, title }) => {
           </button>
         </div>
       </div>
-      {!import.meta.env.VITE_MAPTILER_API_KEY && (
+      {!apiKey && (
         <>
           {/* Fallback Map Background (Visible if live map fails to load or no key) */}
           <div 

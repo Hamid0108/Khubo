@@ -70,7 +70,7 @@ export default function Hero({
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between py-4 md:py-6 px-4 md:px-12 gap-4 z-20">
           <button aria-label="Home" className="flex items-center justify-center overflow-hidden w-10 h-10 md:w-16 md:h-16 transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl">
             <img 
-               src="/Khuno Logo.png" 
+               src="/khubo Logo.png" 
                alt="Khubo Logo" 
                className="w-full h-full object-contain"
                referrerPolicy="no-referrer"
@@ -290,15 +290,6 @@ export default function Hero({
                           className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 p-3 md:p-6 z-50 text-left"
                         >
                           <div className="space-y-2 md:space-y-3">
-                            <div className="relative mb-2 md:mb-3">
-                              <span className="absolute left-2.5 md:left-3 top-1/2 -translate-y-1/2 text-xs md:text-sm font-bold text-neutral-400">₱</span>
-                              <input 
-                                type="text"
-                                placeholder="Any budget..."
-                                className="w-full bg-neutral-100 border-none rounded-xl py-2 pl-6 pr-2 md:py-2.5 md:pl-8 md:pr-4 text-xs md:text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#2252D6]/20 transition-all placeholder:text-neutral-400"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
                             <div className="grid grid-cols-1 gap-1">
                               {[
                                 { label: '₱1k - ₱3k' },
@@ -308,7 +299,7 @@ export default function Hero({
                                 <button 
                                   key={range.label}
                                   onClick={() => { navigate('/maps'); setActiveDropdown(null); }}
-                                  className="flex flex-col py-1.5 md:py-2 px-2 md:px-3 hover:bg-neutral-50 rounded-lg transition-all text-left"
+                                  className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                                 >
                                   <span className="font-medium text-neutral-900 text-xs md:text-sm">{range.label}</span>
                                 </button>

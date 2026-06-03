@@ -45,11 +45,39 @@ export default function ManageListings() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#F9F9F9]">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 size={32} className="animate-spin text-[#17294F]" />
-        </div>
+        <main className="flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-12 animate-pulse">
+          <div className="h-10 bg-neutral-200 rounded w-64 mb-8"></div>
+          <div className="flex flex-col gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white rounded-3xl p-4 sm:p-6 shadow-sm border border-neutral-100 flex flex-col sm:flex-row gap-6">
+                <div className="w-full sm:w-1/3 md:w-1/4 aspect-[4/3] rounded-2xl bg-neutral-200 shrink-0"></div>
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                      <div className="h-8 bg-neutral-200 rounded w-1/2"></div>
+                      <div className="h-6 bg-neutral-200 rounded-full w-24 shrink-0"></div>
+                    </div>
+                    <div className="h-5 bg-neutral-200 rounded w-1/3 mb-4"></div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="h-6 bg-neutral-200 rounded-full w-16"></div>
+                      <div className="h-6 bg-neutral-200 rounded-full w-20"></div>
+                      <div className="h-6 bg-neutral-200 rounded-full w-24"></div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 pt-4 border-t border-neutral-100">
+                    <div className="h-8 bg-neutral-200 rounded w-32"></div>
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="h-10 bg-neutral-200 rounded-full w-24"></div>
+                      <div className="h-10 bg-neutral-200 rounded-full w-24"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
         <Footer />
       </div>
     );

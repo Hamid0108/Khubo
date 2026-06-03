@@ -74,7 +74,7 @@ export default function RoommateHero({
             className="flex items-center justify-center overflow-hidden w-10 h-10 md:w-16 md:h-16 transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
           >
             <img 
-              src="/Khuno Logo.png" 
+              src="/khubo Logo.png" 
               alt="Khubo Logo" 
               className="w-full h-full object-contain"
               referrerPolicy="no-referrer"

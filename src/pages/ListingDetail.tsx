@@ -26,6 +26,7 @@ import { format,
   isWithinInterval,
 } from 'date-fns';
 import { AuthModal } from '../components/AuthModal';
+import ListingDetailSkeleton from '../components/ListingDetailSkeleton';
 
 const Calendar = ({ 
   startDate, 
@@ -155,11 +156,7 @@ export default function ListingDetail() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-[#17294F]" />
-      </div>
-    );
+    return <ListingDetailSkeleton />;
   }
 
   if (!listing) {

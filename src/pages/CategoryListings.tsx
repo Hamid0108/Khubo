@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useListings } from '../hooks/useListings';
 import ListingCard from '../components/ListingCard';
+import ListingCardSkeleton from '../components/ListingCardSkeleton';
 import Footer from '../components/Footer';
 import { ChevronLeft, ArrowLeft } from 'lucide-react';
 import { useMemo } from 'react';
@@ -51,7 +52,13 @@ export default function CategoryListings() {
       </header>
 
       <main className="max-w-[2520px] mx-auto xl:px-12 md:px-12 sm:px-4 px-4 pt-8 pb-32">
-        {filteredListings.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <ListingCardSkeleton key={`skeleton-${i}`} />
+            ))}
+          </div>
+        ) : filteredListings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
             {filteredListings.map((listing) => (
               <ListingCard 

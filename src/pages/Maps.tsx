@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useListings } from '../hooks/useListings';
 import ListingCard from '../components/ListingCard';
+import ListingCardSkeleton from '../components/ListingCardSkeleton';
 import Navbar from '../components/Navbar';
 import { Search, MapPin, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowLeft, MoreHorizontal, Map as MapIcon, X, Calendar as CalendarIcon, Wallet, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +13,7 @@ import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
 
 export default function Maps() {
-  const { listings: LISTINGS } = useListings();
+  const { listings: LISTINGS, loading } = useListings();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [selectedListing, setSelectedListing] = useState<string | null>(null);
@@ -59,7 +60,7 @@ export default function Maps() {
   useEffect(() => {
     if (map.current) return;
 
-    const apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
+    const apiKey = import.meta.env.VITE_MAPTILER_API_KEY || 'JNCQIsX7HW4jPDQX491R';
     maptilersdk.config.apiKey = apiKey || '';
 
     map.current = new maptilersdk.Map({
@@ -361,15 +362,6 @@ export default function Maps() {
                         className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 p-4 z-50 text-left"
                       >
                         <div className="space-y-3">
-                          <div className="relative mb-3">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-neutral-400">₱</span>
-                            <input 
-                              type="text"
-                              placeholder="Any budget..."
-                              className="w-full bg-neutral-100 border-none rounded-xl py-2.5 pl-8 pr-4 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#2252D6]/20 transition-all placeholder:text-neutral-400"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
                           <div className="grid grid-cols-1 gap-1">
                             {[
                               { label: '₱1k - ₱3k' },
@@ -379,7 +371,7 @@ export default function Maps() {
                               <button 
                                 key={range.label}
                                 onClick={() => setActiveDropdown(null)}
-                                className="flex flex-col p-3 rounded-xl bg-neutral-50 border border-neutral-100 hover:border-[#17294F]/30 hover:bg-white transition-all text-left"
+                                className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                               >
                                 <span className="font-bold text-neutral-900 text-sm">{range.label}</span>
                               </button>
@@ -428,22 +420,28 @@ export default function Maps() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {filteredListings.map((listing) => (
-                <div 
-                  key={listing.id} 
-                  id={`listing-${listing.id}`}
-                  className={`transition-all duration-300 rounded-xl cursor-pointer ${selectedListing === listing.id ? 'ring-2 ring-[#17294F] ring-offset-2' : ''}`}
-                  onClick={() => handleListingClick(listing)}
-                >
-                  <ListingCard 
-                    listing={listing}
-                    onClick={() => navigate(`/listing/${listing.id}`)}
-                    compact={true}
-                  />
-                </div>
-              ))}
-              
-              {filteredListings.length === 0 && (
+              {loading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={`skeleton-map-${i}`} className="transition-all duration-300 rounded-xl">
+                    <ListingCardSkeleton compact={true} />
+                  </div>
+                ))
+              ) : filteredListings.length > 0 ? (
+                filteredListings.map((listing) => (
+                  <div 
+                    key={listing.id} 
+                    id={`listing-${listing.id}`}
+                    className={`transition-all duration-300 rounded-xl cursor-pointer ${selectedListing === listing.id ? 'ring-2 ring-[#17294F] ring-offset-2' : ''}`}
+                    onClick={() => handleListingClick(listing)}
+                  >
+                    <ListingCard 
+                      listing={listing}
+                      onClick={() => navigate(`/listing/${listing.id}`)}
+                      compact={true}
+                    />
+                  </div>
+                ))
+              ) : (
                 <div className="py-20 text-center">
                   <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Search size={32} className="text-neutral-400" />

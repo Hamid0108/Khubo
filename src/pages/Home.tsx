@@ -1,6 +1,7 @@
 import Hero from '../components/Hero';
 import Categories from '../components/Categories';
 import ListingCard from '../components/ListingCard';
+import ListingCardSkeleton from '../components/ListingCardSkeleton';
 import BottomNav from '../components/BottomNav';
 import Filters, { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
@@ -71,7 +72,7 @@ export default function Home() {
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsSticky(!entry.isIntersecting);
+        setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 0);
       },
       { rootMargin: '-1px 0px 0px 0px', threshold: 1.0 }
     );
@@ -86,7 +87,7 @@ export default function Home() {
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setShowSearch(!entry.isIntersecting);
+        setShowSearch(!entry.isIntersecting && entry.boundingClientRect.top <= 70);
       },
       { rootMargin: '-70px 0px 0px 0px', threshold: 0 }
     );
@@ -512,19 +513,27 @@ export default function Home() {
               style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
             >
               <AnimatePresence mode="popLayout">
-                {filteredListings.slice(0, 21).map((listing) => (
-                  <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
-                    <ListingCard 
-                      listing={listing} 
-                      onClick={() => handleListingClick(listing.id)}
-                    />
-                  </div>
-                ))}
+                {listingsLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={`skeleton-rec-${i}`} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                      <ListingCardSkeleton />
+                    </div>
+                  ))
+                ) : (
+                  filteredListings.slice(0, 21).map((listing) => (
+                    <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                      <ListingCard 
+                        listing={listing} 
+                        onClick={() => handleListingClick(listing.id)}
+                      />
+                    </div>
+                  ))
+                )}
               </AnimatePresence>
             </div>
           </div>
 
-          {filteredListings.length > 0 && (
+          {(listingsLoading || filteredListings.length > 0) && (
             <div className="flex flex-col gap-5 md:gap-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 group cursor-pointer min-w-0" onClick={() => navigate('/category/top-listing')}>
@@ -558,20 +567,28 @@ export default function Home() {
                 style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
               >
                 <AnimatePresence mode="popLayout">
-                  {filteredListings.slice(7, 28).map((listing) => (
-                    <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
-                      <ListingCard 
-                        listing={listing} 
-                        onClick={() => handleListingClick(listing.id)}
-                      />
-                    </div>
-                  ))}
+                  {listingsLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <div key={`skeleton-top-${i}`} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                        <ListingCardSkeleton />
+                      </div>
+                    ))
+                  ) : (
+                    filteredListings.slice(7, 28).map((listing) => (
+                      <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                        <ListingCard 
+                          listing={listing} 
+                          onClick={() => handleListingClick(listing.id)}
+                        />
+                      </div>
+                    ))
+                  )}
                 </AnimatePresence>
               </div>
             </div>
           )}
 
-          {filteredListings.length > 0 && (
+          {(listingsLoading || filteredListings.length > 0) && (
             <div className="flex flex-col gap-5 md:gap-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 group cursor-pointer min-w-0" onClick={() => navigate('/category/near-msu-iit')}>
@@ -605,14 +622,22 @@ export default function Home() {
                 style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
               >
                 <AnimatePresence mode="popLayout">
-                  {filteredListings.slice(14, 35).map((listing) => (
-                    <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
-                      <ListingCard 
-                        listing={listing} 
-                        onClick={() => handleListingClick(listing.id)}
-                      />
-                    </div>
-                  ))}
+                  {listingsLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <div key={`skeleton-msu-${i}`} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                        <ListingCardSkeleton />
+                      </div>
+                    ))
+                  ) : (
+                    filteredListings.slice(14, 35).map((listing) => (
+                      <div key={listing.id} className="w-[calc((100%-12px)/2)] flex-none min-w-[calc((100%-12px)/2)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] md:portrait:min-w-[calc((100%-24px)/3)] md:portrait:w-[calc((100%-24px)/3)] md:landscape:min-w-[calc((100%-48px)/5)] md:landscape:w-[calc((100%-48px)/5)] lg:min-w-[calc((100%-48px)/5)] lg:w-[calc((100%-48px)/5)] xl:min-w-[calc((100%-48px)/5)] xl:w-[calc((100%-48px)/5)] snap-start">
+                        <ListingCard 
+                          listing={listing} 
+                          onClick={() => handleListingClick(listing.id)}
+                        />
+                      </div>
+                    ))
+                  )}
                 </AnimatePresence>
               </div>
             </div>
