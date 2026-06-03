@@ -2,20 +2,20 @@ import { Listing, Category } from '../types';
 
 export const CATEGORIES: Category[] = [
   { label: 'ALL', icon: 'LayoutGrid', emoji: '' },
+  { label: 'Boarding House', icon: 'Home', emoji: '' },
+  { label: 'Apartment', icon: 'Building', emoji: '' },
+  { label: 'Studio', icon: 'Layout', emoji: '' },
+  { label: 'Bed Spacer', icon: 'Bed', emoji: '' },
+  { label: 'Transient', icon: 'Clock', emoji: '' },
   { label: 'Near MSU-IIT', icon: 'School', emoji: '' },
+  { label: 'Affordable', icon: 'Banknote', emoji: '' },
+  { label: 'Pet Friendly', icon: 'PawPrint', emoji: '' },
+  { label: 'With Aircon', icon: 'Wind', emoji: '' },
+  { label: 'WiFi Included', icon: 'Wifi', emoji: '' },
   { label: 'All Female', icon: 'UserCircle', emoji: '' },
   { label: 'Solo Room', icon: 'User', emoji: '' },
   { label: 'Shared Room', icon: 'Users', emoji: '' },
   { label: 'All Male', icon: 'UserCircle2', emoji: '' },
-  { label: 'Affordable', icon: 'Banknote', emoji: '' },
-  { label: 'Bed Spacer', icon: 'Bed', emoji: '' },
-  { label: 'Boarding House', icon: 'Home', emoji: '' },
-  { label: 'Studio', icon: 'Layout', emoji: '' },
-  { label: 'Apartment', icon: 'Building', emoji: '' },
-  { label: 'Transient', icon: 'Clock', emoji: '' },
-  { label: 'Pet Friendly', icon: 'PawPrint', emoji: '' },
-  { label: 'With Aircon', icon: 'Wind', emoji: '' },
-  { label: 'WiFi Included', icon: 'Wifi', emoji: '' },
 ];
 
 export const LISTINGS: Listing[] = [

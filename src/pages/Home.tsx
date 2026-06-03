@@ -487,7 +487,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center justify-between w-full bg-white"
+                className="flex items-center justify-between w-full"
               >
                 <div className="flex-1 min-w-0 relative group/cat pl-2 sm:pl-0">
                   <Categories selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
