@@ -28,6 +28,7 @@ import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
 import { EditListingModal } from '../components/EditListingModal';
 import { CreateListingModal } from '../components/CreateListingModal';
+import { PhotoCarouselOverlay } from '../components/PhotoCarouselOverlay';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -62,6 +63,34 @@ export default function Profile() {
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [newTagInput, setNewTagInput] = useState('');
   const [selectedStatModal, setSelectedStatModal] = useState<string | null>(null);
+
+  const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  
+  const handleOpenGallery = (listing: any, fallbackSrc: string = '') => {
+    const fallbackImages = [
+      'https://images.unsplash.com/photo-1555819485-99aaa4aee26b?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800'
+    ];
+    let imgs: string[] = [];
+    if (listing?.gallery && Array.isArray(listing.gallery) && listing.gallery.length > 0) {
+      imgs = listing.gallery;
+    } else if (listing?.image) {
+      imgs = [listing.image];
+    } else if (fallbackSrc) {
+      imgs = [fallbackSrc];
+    }
+    
+    // Fallbacks just in case we only have 1 image but want to show a gallery anyway for styling (like how the listing detail does it)
+    if (imgs.length < 4) {
+      imgs = [...imgs, ...fallbackImages.slice(0, 4 - imgs.length)];
+    }
+    
+    setGalleryImages(imgs);
+    setIsPhotoGalleryOpen(true);
+  };
 
   const handleBack = () => {
     navigate(-1);
@@ -448,11 +477,14 @@ export default function Profile() {
                 </div>
               ) : myListings.map(listing => (
                   <div key={listing.id} className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-3 md:p-4 flex flex-col lg:flex-row gap-4 md:gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 mx-auto max-w-[340px] md:max-w-none w-full">
-                  <img 
-                    src={listing.image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800'} 
-                    alt={listing.title} 
-                    className="w-full lg:w-[380px] aspect-[4/3] lg:aspect-auto h-auto lg:h-[260px] object-cover rounded-2xl md:rounded-[1.5rem] shrink-0" 
-                  />
+                  <div className="w-full lg:w-[380px] aspect-[4/3] lg:aspect-auto h-auto lg:h-[260px] shrink-0 relative overflow-hidden rounded-2xl md:rounded-[1.5rem] group cursor-zoom-in" onClick={() => handleOpenGallery(listing)}>
+                    <img 
+                      src={listing.image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800'} 
+                      alt={listing.title} 
+                      className="w-full h-full object-cover shrink-0 group-hover:scale-105 transition-transform duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                  </div>
                   <div className="flex-1 flex flex-col justify-between py-1 px-1 md:py-2 md:px-2 md:pr-4">
                     <div>
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-2 md:gap-4 mb-2">
@@ -503,11 +535,14 @@ export default function Profile() {
           )
         ) : (
           <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-3 md:p-4 flex flex-col lg:flex-row gap-4 md:gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 mx-auto max-w-[340px] md:max-w-none mb-16">
-            <img 
-              src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800" 
-              alt="Property" 
-              className="w-full lg:w-[380px] aspect-[4/3] lg:aspect-auto h-auto lg:h-[260px] object-cover rounded-2xl md:rounded-[1.5rem]" 
-            />
+            <div className="w-full lg:w-[380px] aspect-[4/3] lg:aspect-auto h-auto lg:h-[260px] relative overflow-hidden rounded-2xl md:rounded-[1.5rem] group cursor-zoom-in shrink-0" onClick={() => handleOpenGallery(null, 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800')}>
+              <img 
+                src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800" 
+                alt="Property" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+            </div>
             <div className="flex-1 flex flex-col justify-between py-1 px-1 md:py-2 md:px-2 md:pr-4">
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2 md:gap-4 mb-2">
@@ -774,6 +809,13 @@ export default function Profile() {
           </motion.div>
         </div>
       )}
+
+      <PhotoCarouselOverlay 
+        isOpen={isPhotoGalleryOpen}
+        images={galleryImages}
+        initialIndex={0}
+        onClose={() => setIsPhotoGalleryOpen(false)}
+      />
     </div>
   );
 }
