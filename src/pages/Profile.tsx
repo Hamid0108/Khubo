@@ -61,6 +61,7 @@ export default function Profile() {
   const [profileTags, setProfileTags] = useState(['Introvert', 'Pet-friendly', 'Night owl', 'Studious', 'Non-smoker']);
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [newTagInput, setNewTagInput] = useState('');
+  const [selectedStatModal, setSelectedStatModal] = useState<string | null>(null);
 
   const handleBack = () => {
     navigate(-1);
@@ -170,7 +171,7 @@ export default function Profile() {
   }, [user, isLandlord, fetchMyListings]);
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] dark:bg-neutral-950 pb-32 transition-colors duration-300">
+    <div className="min-h-screen bg-[#F9F9F9] pb-32 transition-colors duration-300">
       {/* Hero Section */}
       <div className="relative min-h-[440px] md:h-[500px] w-full bg-black flex flex-col justify-end">
         {/* Background Image */}
@@ -183,10 +184,10 @@ export default function Profile() {
 
         {/* Top Bar */}
         <div className="absolute top-0 w-full p-4 md:p-6 md:px-12 xl:px-20 flex justify-between items-center z-50 text-white pointer-events-none">
-          <button onClick={handleBack} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer">
+          <button onClick={handleBack} className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer">
              <ArrowLeft size={24} className="md:w-8 md:h-8" />
           </button>
-          <button className="p-2 -mr-2 hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer">
+          <button className="p-2 -mr-2 text-white hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer">
              <Megaphone className="w-6 h-6 md:w-7 md:h-7" />
           </button>
         </div>
@@ -203,7 +204,7 @@ export default function Profile() {
                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3px] border-[#2252D6] object-cover bg-white" 
                  />
                  <div className="flex-1 text-center sm:text-left">
-                    <div className="flex items-center justify-center sm:justify-start gap-3">
+                     <div className="flex items-center justify-center sm:justify-start gap-3">
                       {isEditingName ? (
                         <input
                           autoFocus
@@ -216,7 +217,7 @@ export default function Profile() {
                         />
                       ) : (
                         <>
-                          <h1 className="text-2xl md:text-[28px] font-bold tracking-tight">{profileName || 'Your Name'}</h1>
+                          <h1 className="text-2xl md:text-[28px] font-bold tracking-tight text-white">{profileName || 'Your Name'}</h1>
                           <button onClick={() => setIsEditingName(true)} className="hover:bg-white/20 p-1.5 rounded-full transition">
                             <Edit2 className="w-4 h-4 text-white" />
                           </button>
@@ -224,11 +225,11 @@ export default function Profile() {
                       )}
                     </div>
                     <div className="flex items-center justify-center sm:justify-start gap-2 mt-3 text-sm text-white/90">
-                       <GraduationCap className="w-4 h-4 shrink-0" />
+                       <GraduationCap className="w-4 h-4 shrink-0 text-white" />
                        <span>MSU-IIT | 20yrs old | Female</span>
                     </div>
                     <div className="flex items-center justify-center sm:justify-start gap-2 mt-1.5 text-sm text-white/90">
-                       <MapPin className="w-4 h-4 shrink-0" />
+                       <MapPin className="w-4 h-4 shrink-0 text-white" />
                        <span>Tibanga, Iligan City</span>
                     </div>
                  </div>
@@ -236,11 +237,11 @@ export default function Profile() {
               {/* Tags */}
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2">
                  {profileTags.map(tag => (
-                   <span key={tag} className="px-4 py-1.5 rounded-full border border-white/50 text-[11px] md:text-xs font-medium hover:bg-white/10 transition cursor-default group relative">
+                   <span key={tag} className="px-4 py-1.5 rounded-full border border-white/50 text-[11px] md:text-xs font-semibold bg-transparent text-white hover:bg-white/10 transition cursor-default group relative">
                      {tag}
                      <button
                        onClick={() => setProfileTags(profileTags.filter(t => t !== tag))}
-                       className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                       className="absolute -top-1 -right-1 bg-neutral-800 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                      >
                        <X size={10} />
                      </button>
@@ -272,13 +273,13 @@ export default function Profile() {
                          setIsEditingTags(false);
                        }}
                        placeholder="Add tag..."
-                       className="px-4 py-1.5 rounded-full border border-white/50 text-[11px] md:text-xs font-medium bg-white/20 text-white outline-none w-24 placeholder:text-white/70"
+                       className="px-4 py-1.5 rounded-full border border-white/50 text-[11px] md:text-xs font-semibold bg-white/20 text-white outline-none w-24 placeholder:text-neutral-400"
                      />
                    </form>
                  ) : (
                    <button 
                      onClick={() => setIsEditingTags(true)}
-                     className="px-4 py-1.5 rounded-full border border-white/50 border-dashed text-[11px] md:text-xs font-medium bg-black/40 hover:bg-black/60 transition cursor-pointer"
+                     className="px-4 py-1.5 rounded-full border border-white/50 border-dashed text-[11px] md:text-xs font-semibold bg-black/40 text-white hover:bg-black/60 transition cursor-pointer"
                    >
                      + Add tag
                    </button>
@@ -287,20 +288,20 @@ export default function Profile() {
           </div>
 
           {/* Right Quote */}
-          <div className="hidden md:block w-full md:w-[45%] lg:w-[40%] text-white text-xl lg:text-2xl font-medium leading-relaxed drop-shadow-lg p-6 group">
+          <div className="hidden md:block w-full md:w-[45%] lg:w-[40%] text-white text-xl lg:text-2xl font-semibold leading-relaxed drop-shadow-sm p-6 group">
              {isEditingBio ? (
                <textarea
                  autoFocus
                  value={profileBio}
                  onChange={(e) => setProfileBio(e.target.value)}
                  onBlur={() => setIsEditingBio(false)}
-                 className="w-full h-full bg-black/20 backdrop-blur-sm rounded-xl p-4 outline-none border border-white/20 resize-none"
+                 className="w-full h-full bg-black/20 backdrop-blur-sm rounded-xl p-4 outline-none border border-white/20 resize-none text-white"
                />
              ) : (
                <div className="relative cursor-pointer hover:bg-white/10 p-2 rounded-xl transition" onClick={() => setIsEditingBio(true)}>
                  {profileBio}
                  <button className="absolute -top-4 right-0 opacity-0 group-hover:opacity-100 transition p-1 hover:bg-white/20 rounded-full">
-                   <Edit2 size={16} />
+                   <Edit2 size={16} className="text-white" />
                  </button>
                </div>
              )}
@@ -328,6 +329,7 @@ export default function Profile() {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: i * 0.1 }}
+               onClick={() => setSelectedStatModal(stat.title)}
                className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 flex flex-col relative group cursor-pointer hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300"
              >
                <div className="absolute top-5 right-5 md:top-6 md:right-6">
@@ -487,7 +489,7 @@ export default function Profile() {
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3 w-full md:w-auto">
                         <button onClick={() => setEditingListing(listing)} className="flex-1 md:flex-none px-6 py-3 border-[1.5px] border-neutral-600 text-neutral-700 rounded-full font-bold hover:bg-neutral-50 transition active:scale-95 text-sm md:text-base whitespace-nowrap flex items-center justify-center gap-2">
-                          <Edit2 size={16} /> Edit
+                          <Edit2 size={16} className="text-neutral-600" /> Edit
                         </button>
                         <button className="flex-1 md:flex-none px-8 py-3 bg-[#4CAF50] text-white rounded-full font-bold hover:bg-[#43A047] shadow-lg shadow-[#4CAF50]/30 transition active:scale-95 text-sm md:text-base whitespace-nowrap">
                           Manage Tenants
@@ -734,6 +736,43 @@ export default function Profile() {
             setIsCreateListingOpen(false);
           }}
         />
+      )}
+
+      {/* Stat Card Modal */}
+      {selectedStatModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             onClick={() => setSelectedStatModal(null)}
+             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div
+             initial={{ opacity: 0, scale: 0.95, y: 20 }}
+             animate={{ opacity: 1, scale: 1, y: 0 }}
+             exit={{ opacity: 0, scale: 0.95, y: 20 }}
+             className="relative w-full max-w-md bg-white rounded-[2rem] overflow-hidden shadow-2xl z-10"
+          >
+            <div className="flex items-center justify-between p-6 border-b border-neutral-100">
+               <h2 className="text-xl font-bold text-neutral-900">{selectedStatModal}</h2>
+               <button 
+                 onClick={() => setSelectedStatModal(null)}
+                 className="p-2 hover:bg-neutral-100 rounded-full transition-colors text-neutral-500 hover:text-neutral-900"
+               >
+                 <X size={20} />
+               </button>
+            </div>
+            <div className="p-6 h-[250px] overflow-y-auto">
+              <div className="flex flex-col items-center justify-center h-full text-center text-neutral-500 space-y-4">
+                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
+                   <ArrowUpRight className="w-8 h-8 text-neutral-400" />
+                </div>
+                <p className="text-lg">Detailed view for <strong>{selectedStatModal}</strong> is currently empty.</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
