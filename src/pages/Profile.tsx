@@ -360,8 +360,37 @@ export default function Profile() {
         {/* Reservation / Property Card */}
         {isLandlord ? (
           loadingListings ? (
-            <div className="flex justify-center my-10">
-              <Loader2 className="w-8 h-8 animate-spin text-[#17294F]" />
+            <div className="flex flex-col gap-6 mb-16">
+              {[1, 2].map((i) => (
+                <div key={`prop-skeleton-${i}`} className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-3 md:p-4 flex flex-col lg:flex-row gap-4 md:gap-6 border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mx-auto max-w-[340px] md:max-w-none w-full animate-pulse text-left">
+                  <div className="w-full lg:w-[380px] aspect-[4/3] lg:aspect-auto h-auto lg:h-[260px] bg-neutral-200 rounded-2xl md:rounded-[1.5rem] shrink-0" />
+                  <div className="flex-1 flex flex-col justify-between py-1 px-1 md:py-2 md:px-2 md:pr-4">
+                    <div>
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                        <div className="h-7 bg-neutral-200 rounded-lg w-1/2" />
+                        <div className="h-6 bg-neutral-200 rounded-full w-24 shrink-0" />
+                      </div>
+                      <div className="h-4 bg-neutral-200 rounded-md w-1/3 mb-4" />
+                      
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div className="h-6 bg-neutral-200 rounded-full w-12" />
+                        <div className="h-6 bg-neutral-200 rounded-full w-16" />
+                        <div className="h-6 bg-neutral-200 rounded-full w-16" />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-8 md:mt-0 pt-4 border-t border-neutral-50 lg:border-none lg:pt-0">
+                      <div>
+                        <div className="h-8 bg-neutral-200 rounded-md w-28" />
+                      </div>
+                      <div className="flex gap-3 w-full md:w-auto">
+                        <div className="h-11 bg-neutral-200 rounded-full w-20" />
+                        <div className="h-11 bg-neutral-200 rounded-full w-32" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="flex flex-col gap-6 mb-16">

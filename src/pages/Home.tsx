@@ -199,9 +199,11 @@ export default function Home() {
       />
       
       {/* Search History section under Hero */}
-      <div className="max-w-[2520px] mx-auto xl:px-12 md:px-12 sm:px-4 px-4 -mt-10 mb-4">
-        <SearchHistory history={history} onSelect={(q) => { setSearchQuery(q); addSearch(q); }} onRemove={removeSearch} />
-      </div>
+      {history.length > 0 && (
+        <div className="max-w-[2520px] mx-auto xl:px-12 md:px-12 sm:px-4 px-4 mt-4 mb-4">
+          <SearchHistory history={history} onSelect={(q) => { setSearchQuery(q); addSearch(q); }} onRemove={removeSearch} />
+        </div>
+      )}
       <MobileSearchOverlay 
         isOpen={isMobileSearchOpen}
         onClose={() => setIsMobileSearchOpen(false)}

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import RoommateHero from '../components/RoommateHero';
 import RoommateCard from '../components/RoommateCard';
+import RoommateCardSkeleton from '../components/RoommateCardSkeleton';
 import BottomNav from '../components/BottomNav';
 import Filters, { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
@@ -29,6 +30,15 @@ export default function RoommateFinder() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isStickySearchActive, setIsStickySearchActive] = useState(false);
   const [hideStickyDropdown, setHideStickyDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [selectedTag, searchQuery]);
 
   React.useEffect(() => {
     if (isStickySearchActive) {
@@ -411,20 +421,22 @@ export default function RoommateFinder() {
                 transition={{ duration: 0.2 }}
                 className="flex items-center justify-between w-full px-4 md:px-0"
               >
-                <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+                <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1">
                   {TAGS.map((tag) => (
                     <button
                       key={tag}
                       onClick={() => setSelectedTag(tag)}
-                      className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border text-[11px] sm:text-[13px] font-bold transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                      className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0 active:scale-95 cursor-pointer ${
                         selectedTag === tag 
-                        ? 'bg-black text-white border-black' 
-                        : 'bg-white text-neutral-600 border-neutral-300 hover:border-black'
+                        ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm' 
+                        : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-800 hover:text-neutral-900'
                       }`}
                     >
                       {tag.toUpperCase()}
                     </button>
                   ))}
+                  {/* End Spacer to guarantee the rightmost items can be scrolled into view without clipping */}
+                  <div className="w-4 md:w-12 h-1 flex-shrink-0" aria-hidden="true" />
                 </div>
                 <div className="pl-4">
                   <Filters currentFilters={filters} onFilterChange={setFilters} />
@@ -471,11 +483,19 @@ export default function RoommateFinder() {
               style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
             >
               <AnimatePresence mode="popLayout">
-                {filteredRoommates.slice(0, isMobileLandscape ? 2 : (isMobile ? 3 : 10)).map((roommate) => (
-                  <div key={roommate.id} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
-                    <RoommateCard roommate={roommate} onProfileClick={openProfile} />
-                  </div>
-                ))}
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={`skeleton-rec-${i}`} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                      <RoommateCardSkeleton />
+                    </div>
+                  ))
+                ) : (
+                  filteredRoommates.slice(0, isMobileLandscape ? 2 : (isMobile ? 3 : 10)).map((roommate) => (
+                    <div key={roommate.id} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                      <RoommateCard roommate={roommate} onProfileClick={openProfile} />
+                    </div>
+                  ))
+                )}
               </AnimatePresence>
             </div>
           </div>
@@ -512,16 +532,24 @@ export default function RoommateFinder() {
               style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
             >
               <AnimatePresence mode="popLayout">
-                {filteredRoommates.slice().reverse().slice(0, isMobileLandscape ? 2 : (isMobile ? 3 : 10)).map((roommate) => (
-                  <div key={roommate.id} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
-                    <RoommateCard roommate={roommate} onProfileClick={openProfile} actionLabel="Accept as Roommate" />
-                  </div>
-                ))}
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={`skeleton-msu-${i}`} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                      <RoommateCardSkeleton />
+                    </div>
+                  ))
+                ) : (
+                  filteredRoommates.slice().reverse().slice(0, isMobileLandscape ? 2 : (isMobile ? 3 : 10)).map((roommate) => (
+                    <div key={roommate.id} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                      <RoommateCard roommate={roommate} onProfileClick={openProfile} actionLabel="Accept as Roommate" />
+                    </div>
+                  ))
+                )}
               </AnimatePresence>
             </div>
           </div>
           
-          {filteredRoommates.length === 0 && (
+          {!loading && filteredRoommates.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl shadow-sm border border-neutral-100">
               <div className="bg-neutral-100 p-8 rounded-full mb-4">
                 <Search size={40} className="text-neutral-400" />

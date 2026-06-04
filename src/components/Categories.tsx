@@ -44,7 +44,7 @@ export default function Categories({ selectedCategory, onSelect }: CategoriesPro
 
       <div 
         ref={scrollRef}
-        className="flex flex-row items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth px-4 md:px-12 w-full touch-pan-x"
+        className="flex flex-row items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth pl-4 md:pl-12 py-1 w-full touch-pan-x"
       >
         {CATEGORIES.map((category) => {
           const isSelected = selectedCategory === category.label;
@@ -54,16 +54,18 @@ export default function Categories({ selectedCategory, onSelect }: CategoriesPro
               key={category.label}
               onClick={() => onSelect(category.label)}
               className={cn(
-                "px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border text-[11px] sm:text-[13px] font-bold transition-all duration-200 whitespace-nowrap flex-shrink-0",
+                "px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0 active:scale-95 cursor-pointer",
                 isSelected 
-                   ? "bg-black text-white border-black" 
-                   : "bg-white text-gray-700 border-gray-300 hover:border-black"
+                   ? "bg-neutral-900 text-white border-neutral-900 shadow-sm" 
+                   : "bg-white text-neutral-700 border-neutral-200 hover:border-neutral-800 hover:text-neutral-900"
               )}
             >
               {category.label}
             </button>
           );
         })}
+        {/* End Spacer to guarantee the rightmost items can be scrolled into view without clipping */}
+        <div className="w-4 md:w-12 h-1 flex-shrink-0" aria-hidden="true" />
       </div>
     </div>
   );

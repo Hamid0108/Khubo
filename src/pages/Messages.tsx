@@ -94,7 +94,7 @@ export default function Messages() {
         <div className="px-4 py-3 flex items-center justify-between border-b border-transparent">
           <div className="flex items-center gap-3">
              <button 
-              onClick={() => navigate('/')}
+              onClick={() => navigate(-1)}
               className={`p-2 -ml-2 rounded-full transition ${isDarkMode ? 'hover:bg-[#3A3B3C]' : 'hover:bg-neutral-100'}`}
             >
               <ArrowLeft size={24} />
