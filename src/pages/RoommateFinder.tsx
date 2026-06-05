@@ -52,8 +52,6 @@ export default function RoommateFinder() {
     }
   }, [isSticky, isStickySearchActive]);
 
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-
   const openProfile = (roommate: Roommate) => {
     setSelectedRoommate(roommate);
     setIsModalOpen(true);
@@ -185,16 +183,9 @@ export default function RoommateFinder() {
         setSearchQuery={setSearchQuery}
         isSearchActive={isSearchActive}
         setIsSearchActive={setIsSearchActive}
-        onOpenMobileSearch={() => setIsMobileSearchOpen(true)}
+        onOpenMobileSearch={() => setIsSearchActive(true)}
         onSelectRoommate={openProfile}
         suppressDropdown={displaySearch}
-      />
-      <MobileSearchOverlay 
-        isOpen={isMobileSearchOpen}
-        onClose={() => setIsMobileSearchOpen(false)}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        defaultTab="roommates"
       />
       <div id="roommate-results-anchor" />
       <div ref={observerRef} className="w-full h-[1px] invisible pointer-events-none" />
@@ -421,12 +412,12 @@ export default function RoommateFinder() {
                 transition={{ duration: 0.2 }}
                 className="flex items-center justify-between w-full px-4 md:px-0"
               >
-                <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1">
+                <div className="flex-1 flex flex-row items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 w-full touch-pan-x">
                   {TAGS.map((tag) => (
                     <button
                       key={tag}
                       onClick={() => setSelectedTag(tag)}
-                      className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0 active:scale-95 cursor-pointer ${
+                      className={`px-2.5 py-1 sm:px-4 sm:py-2 rounded-full border text-[10px] sm:text-xs font-bold sm:tracking-wider uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0 active:scale-95 cursor-pointer ${
                         selectedTag === tag 
                         ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm' 
                         : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-800 hover:text-neutral-900'

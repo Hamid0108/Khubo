@@ -136,7 +136,7 @@ export default function Maps() {
       center: [124.2442, 8.2415], // Iligan City center
       zoom: 13,
       navigationControl: false,
-      geolocateControl: true,
+      geolocateControl: false,
     });
 
     // Intercept and resolve missing style images to suppress MapTiler road/space warnings in console
@@ -186,13 +186,13 @@ export default function Maps() {
     <div className="flex flex-col h-screen bg-white relative">
       <button 
         onClick={() => navigate(-1)}
-        className="md:hidden absolute top-20 left-4 z-50 p-2 bg-white/90 backdrop-blur-md shadow-lg pointer-events-auto active:scale-90 transition-transform rounded-full"
+        className="md:hidden absolute top-[76px] left-3 z-[60] p-2 bg-white/90 backdrop-blur-md shadow-lg pointer-events-auto active:scale-90 transition-transform rounded-full border border-neutral-100"
       >
-        <ArrowLeft size={24} className="text-neutral-900" />
+        <ArrowLeft size={20} className="text-neutral-900" />
       </button>
 
       {/* Search Header */}
-      <div className="flex items-center justify-between px-4 md:px-8 py-3 border-b border-neutral-100/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40 shadow-sm gap-4">
+      <div className="flex items-center justify-center md:justify-between px-3 md:px-8 py-2.5 border-b border-neutral-100/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40 shadow-sm gap-2 sm:gap-3">
         
         {/* Desktop Back Button */}
         <div className="hidden md:flex flex-1 justify-start">
@@ -205,8 +205,8 @@ export default function Maps() {
           </button>
         </div>
         
-        <div className="flex-[3] flex justify-center min-w-0">
-          <div ref={dropdownRef} className="bg-white border border-neutral-200 p-1.5 sm:p-2 md:p-2 rounded-full flex items-center text-neutral-800 shadow-lg w-full max-w-[340px] sm:max-w-[480px] md:max-w-[650px] lg:max-w-[750px] transition-all relative z-40 pointer-events-auto cursor-default">
+        <div className="flex-[3] flex justify-center min-w-0 w-full">
+          <div ref={dropdownRef} className="bg-white border border-neutral-200 p-1.5 sm:p-2 md:p-2 rounded-full flex items-center text-neutral-800 shadow-lg w-full sm:max-w-[480px] md:max-w-[650px] lg:max-w-[750px] transition-all relative z-40 pointer-events-auto cursor-default">
             {isSearchActive ? (
               <>
                 <div className="flex-1 flex items-center pl-4 md:pl-5 pr-0 py-0 w-full min-w-0">
@@ -252,15 +252,15 @@ export default function Maps() {
                   <div 
                     role="button" 
                     onClick={() => toggleDropdown('location')}
-                    className={`w-full min-w-0 flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition cursor-pointer group text-black focus-visible:outline-none ${
+                    className={`w-full min-w-0 flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-1.5 md:py-2 transition cursor-pointer group text-black focus-visible:outline-none ${
                         activeDropdown === 'location' 
                         ? 'bg-neutral-100 rounded-full text-[#17294F] shadow-sm relative z-[60]' 
                         : 'hover:bg-neutral-50 rounded-full'
                     }`}
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
-                      <MapPin className="w-4 h-4 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
-                      <span className="text-[11px] sm:text-sm md:text-base font-semibold truncate">Location</span>
+                      <MapPin className="w-3.5 h-3.5 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
+                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">Location</span>
                     </div>
                     <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 opacity-40 group-hover:opacity-100 flex-shrink-0 ml-0.5 md:ml-1 transition-all ${activeDropdown === 'location' ? 'rotate-180 opacity-100' : ''}`} />
                   </div>
@@ -311,15 +311,15 @@ export default function Maps() {
                   <div 
                     role="button" 
                     onClick={() => toggleDropdown('dates')}
-                    className={`w-full min-w-0 flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition cursor-pointer group text-black focus-visible:outline-none ${
+                    className={`w-full min-w-0 flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-1.5 md:py-2 transition cursor-pointer group text-black focus-visible:outline-none ${
                         activeDropdown === 'dates' 
                         ? 'bg-neutral-100 rounded-full text-[#17294F] shadow-sm relative z-[60]' 
                         : 'hover:bg-neutral-50 rounded-full'
                     }`}
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
-                      <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
-                      <span className="text-[11px] sm:text-sm md:text-base font-semibold truncate">Dates</span>
+                      <CalendarIcon className="w-3.5 h-3.5 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
+                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">Dates</span>
                     </div>
                     <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 opacity-40 group-hover:opacity-100 flex-shrink-0 ml-0.5 md:ml-1 transition-all ${activeDropdown === 'dates' ? 'rotate-180 opacity-100' : ''}`} />
                   </div>
@@ -345,15 +345,15 @@ export default function Maps() {
                   <div 
                     role="button" 
                     onClick={() => toggleDropdown('budget')}
-                    className={`w-full min-w-0 flex items-center justify-between px-2 sm:px-3 md:pl-5 md:pr-3 py-2 md:py-2 transition cursor-pointer group text-black focus-visible:outline-none ${
+                    className={`w-full min-w-0 flex items-center justify-between px-1.5 sm:px-3 md:pl-5 md:pr-3 py-1.5 md:py-2 transition cursor-pointer group text-black focus-visible:outline-none ${
                         activeDropdown === 'budget' 
                         ? 'bg-neutral-100 rounded-full text-[#17294F] shadow-sm relative z-[60]' 
                         : 'hover:bg-neutral-50 rounded-full'
                     }`}
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
-                      <Wallet className="w-4 h-4 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
-                      <span className="text-[11px] sm:text-sm md:text-base font-semibold truncate">Budget</span>
+                      <Wallet className="w-3.5 h-3.5 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
+                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">Budget</span>
                     </div>
                     <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 opacity-40 group-hover:opacity-100 flex-shrink-0 ml-0.5 md:ml-1 transition-all ${activeDropdown === 'budget' ? 'rotate-180 opacity-100' : ''}`} />
                   </div>
@@ -394,10 +394,10 @@ export default function Maps() {
                     setSearchQuery('');
                     setIsSearchActive(true);
                   }} 
-                  className="bg-[#17294F] p-3 rounded-full transition-all shadow-lg ml-2 group flex-shrink-0 relative z-[70] cursor-pointer"
+                  className="bg-[#17294F] p-2 sm:p-3 md:p-3 rounded-full transition-all shadow-lg ml-1 sm:ml-2 md:ml-2 group flex-shrink-0 relative z-[70] cursor-pointer"
                   aria-label="Search"
                 >
-                  <Search size={18} className="text-white group-hover:stroke-[3px] transition-all" />
+                  <Search className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px] md:w-[18px] md:h-[18px] text-white group-hover:stroke-[3px] transition-all" />
                 </button>
               </>
             )}

@@ -46,7 +46,6 @@ export default function Home() {
     }
   }, [isStickySearchActive]);
 
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -194,7 +193,7 @@ export default function Home() {
         setSearchQuery={setSearchQuery}
         isSearchActive={isSearchActive}
         setIsSearchActive={setIsSearchActive}
-        onOpenMobileSearch={() => setIsMobileSearchOpen(true)}
+        onOpenMobileSearch={() => setIsSearchActive(true)}
         suppressDropdown={displaySearch}
       />
       
@@ -204,13 +203,6 @@ export default function Home() {
           <SearchHistory history={history} onSelect={(q) => { setSearchQuery(q); addSearch(q); }} onRemove={removeSearch} />
         </div>
       )}
-      <MobileSearchOverlay 
-        isOpen={isMobileSearchOpen}
-        onClose={() => setIsMobileSearchOpen(false)}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        defaultTab="properties"
-      />
       <div id="search-results-anchor" />
       <div ref={observerRef} className="w-full h-[1px] invisible pointer-events-none" />
       
@@ -460,13 +452,9 @@ export default function Home() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (isMobile) {
-                                setIsMobileSearchOpen(true);
-                            } else {
-                                addSearch(searchQuery);
-                                setSearchQuery('');
-                                setIsStickySearchActive(true);
-                            }
+                            addSearch(searchQuery);
+                            setSearchQuery('');
+                            setIsStickySearchActive(true);
                           }}
                           aria-label="Search" 
                           className="bg-[#17294F] p-2.5 sm:p-2 md:p-2.5 rounded-full transition-all duration-200 shadow-md ml-0.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white flex-shrink-0"

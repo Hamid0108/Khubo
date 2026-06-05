@@ -315,12 +315,8 @@ export default function Hero({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (window.innerWidth < 768) {
-                        onOpenMobileSearch();
-                      } else {
-                        setSearchQuery('');
-                        setIsSearchActive(true);
-                      }
+                      setSearchQuery('');
+                      setIsSearchActive(true);
                     }}
                     aria-label="Search" 
                     className="bg-[#17294F] p-2 md:p-4 rounded-full transition-all duration-200 shadow-lg ml-0.5 md:ml-1.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white flex-shrink-0"
