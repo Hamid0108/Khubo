@@ -539,7 +539,6 @@ export default function Home() {
               className="flex gap-3 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
               style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
             >
-              <AnimatePresence mode="popLayout">
                 {listingsLoading ? (
                   <ListingCarouselSkeleton prefix="rec" />
                 ) : (
@@ -548,11 +547,11 @@ export default function Home() {
                       <ListingCard 
                         listing={listing} 
                         onClick={() => handleListingClick(listing.id)}
+                        disableInitialAnimation={true}
                       />
                     </div>
                   ))
                 )}
-              </AnimatePresence>
             </div>
           </div>
 
@@ -589,20 +588,19 @@ export default function Home() {
                 className="flex gap-3 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
                 style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
               >
-                <AnimatePresence mode="popLayout">
-                  {listingsLoading ? (
-                    <ListingCarouselSkeleton prefix="top" />
-                  ) : (
-                    filteredListings.slice(7, 28).map((listing) => (
-                      <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
-                        <ListingCard 
-                          listing={listing} 
-                          onClick={() => handleListingClick(listing.id)}
-                        />
-                      </div>
-                    ))
-                  )}
-                </AnimatePresence>
+                {listingsLoading ? (
+                  <ListingCarouselSkeleton prefix="top" />
+                ) : (
+                  filteredListings.slice(7, 28).map((listing) => (
+                    <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
+                      <ListingCard 
+                        listing={listing} 
+                        onClick={() => handleListingClick(listing.id)}
+                        disableInitialAnimation={true}
+                      />
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -640,20 +638,19 @@ export default function Home() {
                 className="flex gap-3 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
                 style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
               >
-                <AnimatePresence mode="popLayout">
-                  {listingsLoading ? (
-                    <ListingCarouselSkeleton prefix="msu" />
-                  ) : (
-                    filteredListings.slice(14, 35).map((listing) => (
-                      <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
-                        <ListingCard 
-                          listing={listing} 
-                          onClick={() => handleListingClick(listing.id)}
-                        />
-                      </div>
-                    ))
-                  )}
-                </AnimatePresence>
+                {listingsLoading ? (
+                  <ListingCarouselSkeleton prefix="msu" />
+                ) : (
+                  filteredListings.slice(14, 35).map((listing) => (
+                    <div key={listing.id} className={CAROUSEL_ITEM_CLASS}>
+                      <ListingCard 
+                        listing={listing} 
+                        onClick={() => handleListingClick(listing.id)}
+                        disableInitialAnimation={true}
+                      />
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

@@ -6,14 +6,14 @@ interface ListingCardProps {
   listing: Listing;
   onClick: () => void;
   compact?: boolean;
+  disableInitialAnimation?: boolean;
 }
 
-export default function ListingCard({ listing, onClick, compact }: ListingCardProps) {
+export default function ListingCard({ listing, onClick, compact, disableInitialAnimation }: ListingCardProps) {
   if (compact) {
     return (
       <motion.div 
-        layout
-        initial={{ opacity: 0, y: 10 }}
+        initial={disableInitialAnimation ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
@@ -68,8 +68,7 @@ export default function ListingCard({ listing, onClick, compact }: ListingCardPr
 
   return (
     <motion.div 
-      layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={disableInitialAnimation ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
