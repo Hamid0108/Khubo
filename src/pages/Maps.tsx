@@ -418,11 +418,7 @@ export default function Maps() {
         {/* Left Sidebar - Scrollable Listings */}
         <div className={`hidden md:block transition-all duration-300 h-full overflow-hidden border-r border-neutral-100 bg-white z-20 flex-shrink-0 ${isSidebarCollapsed ? 'w-0' : 'md:portrait:w-[330px] md:landscape:w-[420px] lg:w-[480px]'}`}>
           <div className="w-full md:portrait:w-[330px] md:landscape:w-[420px] lg:w-[480px] h-full overflow-y-auto p-4 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold font-display">
-                {filteredListings.length} results found
-              </h2>
-            </div>
+
 
             <div className="flex flex-col gap-3">
               {loading ? (
