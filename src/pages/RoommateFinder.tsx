@@ -11,7 +11,6 @@ import { Search, ChevronLeft, ChevronRight, ChevronDown, MapPin, Calendar as Cal
 import { useNavigate } from 'react-router-dom';
 import RoommateModal from '../components/RoommateModal';
 import { Roommate } from '../types';
-import MobileSearchOverlay from '../components/MobileSearchOverlay';
 import RoommateSearchDropdown from '../components/RoommateSearchDropdown';
 
 const TAGS = [
@@ -73,14 +72,10 @@ export default function RoommateFinder() {
     sortBy: 'relevance'
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isMobileLandscape, setIsMobileLandscape] = useState(
-    window.innerWidth < 1024 && window.innerWidth > window.innerHeight
-  );
 
   React.useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      setIsMobileLandscape(window.innerWidth < 1024 && window.innerWidth > window.innerHeight);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -476,13 +471,13 @@ export default function RoommateFinder() {
               <AnimatePresence mode="popLayout">
                 {loading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={`skeleton-rec-${i}`} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                    <div key={`skeleton-rec-${i}`} className="flex-none snap-start w-full [@media(max-height:500px)_and_(orientation:landscape)]:w-[calc(50vw-24px)] sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]">
                       <RoommateCardSkeleton />
                     </div>
                   ))
                 ) : (
-                  filteredRoommates.slice(0, isMobileLandscape ? 2 : (isMobile ? 3 : 10)).map((roommate) => (
-                    <div key={roommate.id} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                  filteredRoommates.slice(0, 10).map((roommate) => (
+                    <div key={roommate.id} className="flex-none snap-start w-full [@media(max-height:500px)_and_(orientation:landscape)]:w-[calc(50vw-24px)] sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]">
                       <RoommateCard roommate={roommate} onProfileClick={openProfile} />
                     </div>
                   ))
@@ -525,13 +520,13 @@ export default function RoommateFinder() {
               <AnimatePresence mode="popLayout">
                 {loading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={`skeleton-msu-${i}`} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                    <div key={`skeleton-msu-${i}`} className="flex-none snap-start w-full [@media(max-height:500px)_and_(orientation:landscape)]:w-[calc(50vw-24px)] sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]">
                       <RoommateCardSkeleton />
                     </div>
                   ))
                 ) : (
-                  filteredRoommates.slice().reverse().slice(0, isMobileLandscape ? 2 : (isMobile ? 3 : 10)).map((roommate) => (
-                    <div key={roommate.id} className={`flex-none snap-start ${isMobileLandscape ? 'w-[calc(50vw-24px)]' : 'w-full sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]'}`}>
+                  filteredRoommates.slice().reverse().slice(0, 10).map((roommate) => (
+                    <div key={roommate.id} className="flex-none snap-start w-full [@media(max-height:500px)_and_(orientation:landscape)]:w-[calc(50vw-24px)] sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]">
                       <RoommateCard roommate={roommate} onProfileClick={openProfile} actionLabel="Accept as Roommate" />
                     </div>
                   ))

@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useMemo, useRef, useDeferredValue } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight, Search, MapPin, Calendar as CalendarIcon, Wallet, ChevronDown, X } from 'lucide-react';
-import MobileSearchOverlay from '../components/MobileSearchOverlay';
 import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
 import { useSearchHistory } from '../hooks/useSearchHistory';

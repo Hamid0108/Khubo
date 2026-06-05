@@ -72,7 +72,7 @@ export default function SearchDropdown({
   const hasResults = matches.popular.length > 0 || matches.listings.length > 0;
 
   return (
-    <div className="absolute top-[100%] mt-2 md:mt-3 left-0 right-0 bg-white rounded-2xl md:rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden z-[99] text-left pointer-events-auto flex flex-col md:flex-row max-h-[60vh] md:max-h-[360px]">
+    <div className="absolute top-[100%] mt-2 md:mt-3 left-0 right-0 bg-white rounded-2xl md:rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden z-[99] text-left pointer-events-auto flex flex-col md:flex-row max-h-[60dvh] md:max-h-[360px]">
       
       {/* Left panel: General Suggestions & Quick Searches */}
       <div className="flex-1 border-b md:border-b-0 md:border-r border-neutral-100 p-4 sm:p-5 overflow-y-auto">
