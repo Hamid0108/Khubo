@@ -232,11 +232,10 @@ export default function Maps() {
                   onClick={() => {
                     setIsSearchActive(false);
                   }}
-                  className="bg-[#17294F] p-1.5 sm:p-2 md:p-2.5 rounded-full transition-all duration-200 shadow-md ml-0.5 group flex-shrink-0 flex items-center justify-center cursor-pointer"
+                  className="bg-[#17294F] p-2 sm:p-3 md:p-3 rounded-full transition-all duration-200 shadow-md ml-1 sm:ml-2 md:ml-2 group flex-shrink-0 flex items-center justify-center cursor-pointer relative z-[70]"
                   aria-label="Search"
                 >
-                  <Search size={12} className="text-white group-hover:stroke-[3px] transition-all md:hidden" />
-                  <Search size={16} className="text-white group-hover:stroke-[3px] transition-all hidden md:block" />
+                  <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-[18px] md:h-[18px] text-white group-hover:stroke-[3px] transition-all" />
                 </button>
                 <SearchDropdown
                   searchQuery={searchQuery}
@@ -394,10 +393,10 @@ export default function Maps() {
                     setSearchQuery('');
                     setIsSearchActive(true);
                   }} 
-                  className="bg-[#17294F] p-2 sm:p-3 md:p-3 rounded-full transition-all shadow-lg ml-1 sm:ml-2 md:ml-2 group flex-shrink-0 relative z-[70] cursor-pointer"
+                  className="bg-[#17294F] p-2 sm:p-3 md:p-3 rounded-full transition-all duration-200 shadow-md ml-1 sm:ml-2 md:ml-2 group flex-shrink-0 flex items-center justify-center cursor-pointer relative z-[70]"
                   aria-label="Search"
                 >
-                  <Search className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px] md:w-[18px] md:h-[18px] text-white group-hover:stroke-[3px] transition-all" />
+                  <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-[18px] md:h-[18px] text-white group-hover:stroke-[3px] transition-all" />
                 </button>
               </>
             )}
