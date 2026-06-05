@@ -148,7 +148,7 @@ export default function ListingDetail() {
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
-  const [showAllAmenitiesMobile, setShowAllAmenitiesMobile] = useState(false);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Simulated auth state
@@ -220,15 +220,16 @@ export default function ListingDetail() {
   const displayHost = listing.host || defaultHost;
 
   return (
-    <div className="min-h-screen bg-neutral-50 md:bg-white pb-32">
+    <div className="min-h-screen bg-neutral-50 md:bg-white pb-32 text-neutral-900">
       {/* Desktop Header */}
       <div className="hidden md:block sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-[2520px] mx-auto xl:px-12 md:px-12 sm:px-4 px-4 h-16 flex items-center justify-between">
           <button 
             onClick={() => navigate(-1)}
-            className="flex items-center hover:bg-neutral-100 p-2 -ml-2 rounded-full transition"
+            className="flex items-center gap-2 hover:bg-neutral-100 p-2 pr-4 -ml-2 rounded-full transition text-neutral-900"
           >
             <ArrowLeft size={24} />
+            <span className="font-semibold text-sm hidden sm:block">Back</span>
           </button>
           <div className="flex items-center gap-4">
           </div>
@@ -316,7 +317,7 @@ export default function ListingDetail() {
 
         {/* Desktop Title Bar - Now below images */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2 pt-4">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">{listing.title}</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-neutral-900 tracking-tight leading-tight">{listing.title}</h1>
           <div className="hidden md:flex items-center shrink-0">
             <button 
               onClick={() => {
@@ -344,14 +345,14 @@ export default function ListingDetail() {
             </div>
 
             <div className="py-10 border-b border-gray-100">
-              <h3 className="text-2xl font-semibold mb-6">About this place</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">About this place</h3>
               <p className="text-neutral-700 leading-relaxed text-lg whitespace-pre-wrap">
                 {listing.description}
               </p>
             </div>
 
             <div className="py-12 border-b border-gray-100">
-              <h3 className="text-2xl font-semibold mb-8">What this place offers</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-8">What this place offers</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-10">
                 <div className="flex items-center gap-4">
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
@@ -371,43 +372,43 @@ export default function ListingDetail() {
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">TV</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className="flex items-center gap-4">
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <ArrowDownUp size={20} strokeWidth={2} className="text-white" />
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">Elevator</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <Fence size={20} strokeWidth={2} className="text-white" />
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">Private patio or balcony</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <Briefcase size={20} strokeWidth={2} className="text-white" />
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">Luggage dropoff allowed</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <Refrigerator size={20} strokeWidth={2} className="text-white" />
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">Refrigerator</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <Microwave size={20} strokeWidth={2} className="text-white" />
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">Microwave</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <Car size={20} strokeWidth={2} className="text-white" />
                   </div>
                   <span className="text-[16px] text-neutral-800 font-medium">Paid parking off premises</span>
                 </div>
-                <div className={cn("items-center gap-4", showAllAmenitiesMobile ? "flex" : "hidden md:flex")}>
+                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
                   <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
                     <Cctv size={20} strokeWidth={2} className="text-white" />
                   </div>
@@ -415,8 +416,8 @@ export default function ListingDetail() {
                 </div>
               </div>
               <button 
-                onClick={() => setShowAllAmenitiesMobile(true)}
-                className={cn("px-6 py-3 border-2 border-[#17294F] text-[#17294F] rounded-xl font-bold hover:bg-[#17294F]/5 transition active:scale-95 inline-block", showAllAmenitiesMobile && "hidden md:inline-block")}
+                onClick={() => setShowAllAmenities(true)}
+                className={cn("px-6 py-3 border-2 border-[#17294F] text-[#17294F] rounded-xl font-bold hover:bg-[#17294F]/5 transition active:scale-95 inline-block", showAllAmenities && "hidden")}
               >
                 Show all 28 amenities
               </button>
@@ -425,7 +426,7 @@ export default function ListingDetail() {
             <div className="py-10">
                <div className="flex items-center gap-3 mb-8">
                   <Star size={24} className="fill-amber-400 text-amber-400" />
-                  <h3 className="text-2xl font-semibold">{listing.rating.toFixed(2)} · {listing.reviews.length} reviews</h3>
+                  <h3 className="text-2xl font-semibold text-neutral-900">{listing.rating.toFixed(2)} · {listing.reviews.length} reviews</h3>
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   {listing.reviews.map((rev, idx) => (
@@ -449,7 +450,7 @@ export default function ListingDetail() {
                   <MapPin size={28} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">{listing.location}</h3>
+                  <h3 className="text-xl font-semibold text-neutral-900">{listing.location}</h3>
                   <p className="text-neutral-500 max-w-lg mt-1">8.2280° N, 124.2452° E</p>
                 </div>
               </div>
