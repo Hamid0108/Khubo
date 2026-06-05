@@ -186,7 +186,8 @@ export default function Maps() {
     <div className="flex flex-col h-screen bg-white relative">
       <button 
         onClick={() => navigate(-1)}
-        className="md:hidden absolute top-[76px] left-3 z-[60] p-2 bg-white/90 backdrop-blur-md shadow-lg pointer-events-auto active:scale-90 transition-transform rounded-full border border-neutral-100"
+        className="md:hidden absolute top-[76px] left-3 z-[60] w-10 h-10 flex items-center justify-center bg-white shadow-md pointer-events-auto active:scale-90 transition-transform rounded-full border border-neutral-100"
+        aria-label="Go back"
       >
         <ArrowLeft size={20} className="text-neutral-900" />
       </button>
@@ -194,11 +195,11 @@ export default function Maps() {
       {/* Search Header */}
       <div className="flex items-center justify-center md:justify-between px-3 md:px-8 py-2.5 border-b border-neutral-100/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40 shadow-sm gap-2 sm:gap-3">
         
-        {/* Desktop Back Button */}
+        {/* Back Button */}
         <div className="hidden md:flex flex-1 justify-start">
           <button 
             onClick={() => navigate(-1)}
-            className="p-2 -ml-2 rounded-full hover:bg-neutral-100 transition-colors"
+            className="p-2 -ml-1 md:-ml-2 rounded-full hover:bg-neutral-100 transition-colors"
             aria-label="Go back"
           >
             <ArrowLeft size={24} className="text-neutral-900" />
@@ -206,7 +207,7 @@ export default function Maps() {
         </div>
         
         <div className="flex-[3] flex justify-center min-w-0 w-full">
-          <div ref={dropdownRef} className="bg-white border border-neutral-200 p-1.5 sm:p-2 md:p-2 rounded-full flex items-center text-neutral-800 shadow-lg w-full sm:max-w-[480px] md:max-w-[650px] lg:max-w-[750px] transition-all relative z-40 pointer-events-auto cursor-default">
+          <div ref={dropdownRef} className="bg-white border border-neutral-200 p-1.5 sm:p-2 md:p-2 rounded-full flex items-center h-[46px] sm:h-[52px] md:h-[56px] text-neutral-800 shadow-lg w-full sm:max-w-[480px] md:max-w-[650px] lg:max-w-[750px] transition-all relative z-40 pointer-events-auto cursor-default">
             {isSearchActive ? (
               <>
                 <div className="flex-1 flex items-center pl-4 md:pl-5 pr-0 py-0 w-full min-w-0">
