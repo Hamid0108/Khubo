@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { Listing } from '../types';
 import { 
   ArrowLeft,
   ChevronLeft, 
@@ -67,7 +68,7 @@ export default function Profile() {
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   
-  const handleOpenGallery = (listing: any, fallbackSrc: string = '') => {
+  const handleOpenGallery = (listing: Listing, fallbackSrc: string = '') => {
     const fallbackImages = [
       'https://images.unsplash.com/photo-1555819485-99aaa4aee26b?auto=format&fit=crop&q=80&w=800',
       'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800',

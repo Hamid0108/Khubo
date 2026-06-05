@@ -1,8 +1,20 @@
 import React, { createContext, useContext, useState } from 'react';
 
+// Using partial user representation to emulate Supabase locally
+export interface MockUser {
+  id?: string;
+  email?: string;
+  [key: string]: any;
+}
+
+export interface MockSession {
+  user: MockUser;
+  [key: string]: any;
+}
+
 interface AuthContextType {
-  session: any | null;
-  user: any | null;
+  session: MockSession | null;
+  user: MockUser | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
   signIn: (email: string) => void;
@@ -11,8 +23,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any | null>(null);
-  const [user, setUser] = useState<any | null>(null);
+  const [session, setSession] = useState<MockSession | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const signOut = async () => {

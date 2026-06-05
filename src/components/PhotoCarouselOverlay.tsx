@@ -128,7 +128,7 @@ export const PhotoCarouselOverlay: React.FC<PhotoCarouselOverlayProps> = ({
                     idx === currentIndex ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                  <img src={img} className="w-full h-full object-cover" alt={`Gallery photo ${idx}`} referrerPolicy="no-referrer" />
                 </button>
               ))}
            </div>

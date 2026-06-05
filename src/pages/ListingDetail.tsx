@@ -579,7 +579,6 @@ export default function ListingDetail() {
                     }
                     if (startDate) {
                       // Reserve logic
-                      console.log('Reserving for', startDate);
                     } else {
                       setIsModalOpen(true);
                     }
@@ -637,7 +636,6 @@ export default function ListingDetail() {
               }
               if (startDate) {
                 // Reserve logic
-                console.log('Reserving for', startDate);
               } else {
                 setIsModalOpen(true);
               }

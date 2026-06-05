@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import RoommateSearchDropdown from './RoommateSearchDropdown';
+import { Roommate } from '../types';
 
 interface RoommateHeroProps {
   searchQuery?: string;
@@ -10,7 +11,7 @@ interface RoommateHeroProps {
   isSearchActive?: boolean;
   setIsSearchActive?: (active: boolean) => void;
   onOpenMobileSearch?: () => void;
-  onSelectRoommate?: (roommate: any) => void;
+  onSelectRoommate?: (roommate: Roommate) => void;
   suppressDropdown?: boolean;
 }
 

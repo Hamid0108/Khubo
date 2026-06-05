@@ -8,7 +8,6 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => {
-        console.log('Button clicked');
         toggleTheme();
       }}
       className="p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"

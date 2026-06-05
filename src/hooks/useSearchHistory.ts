@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 
 const STORAGE_KEY = 'home_search_history';
 
+/**
+ * Custom hook to manage search history locally.
+ * Preserves the 5 most recent unique search queries using localStorage.
+ * 
+ * @returns {{ history: string[], addSearch: (query: string) => void, removeSearch: (query: string) => void }}
+ */
 export const useSearchHistory = () => {
   const [history, setHistory] = useState<string[]>([]);
 

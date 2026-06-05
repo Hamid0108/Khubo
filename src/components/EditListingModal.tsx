@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Upload, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { Listing } from '../types';
 
 interface EditListingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  listing: any;
+  listing: Listing;
 }
 
 const CATEGORIES = ["boarding", "apartment", "pad", "condo", "shared"];
