@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Upload, XCircle, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../mocks/supabase';
 import { useAuth } from '../lib/AuthContext';
 
 interface CreateListingModalProps {

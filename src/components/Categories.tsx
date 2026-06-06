@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
-import { CATEGORIES } from '../data/listings';
+import { CATEGORIES } from '../mocks/listings';
 import { cn } from '../lib/utils';
 
 interface CategoriesProps {

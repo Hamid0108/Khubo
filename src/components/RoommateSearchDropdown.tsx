@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Search, MapPin, TrendingUp, Users, Award, ShieldCheck } from 'lucide-react';
-import { ROOMMATES } from '../data/roommates';
+import { ROOMMATES } from '../mocks/roommates';
 import { Roommate } from '../types';
 
 interface RoommateSearchDropdownProps {

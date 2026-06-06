@@ -3,7 +3,7 @@ import { Home, MessageSquare, Users, Map, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../mocks/supabase';
 
 export default function BottomNav() {
   const location = useLocation();

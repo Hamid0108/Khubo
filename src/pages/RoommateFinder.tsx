@@ -5,7 +5,7 @@ import RoommateCardSkeleton from '../components/RoommateCardSkeleton';
 import BottomNav from '../components/BottomNav';
 import Filters, { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
-import { ROOMMATES } from '../data/roommates';
+import { ROOMMATES } from '../mocks/roommates';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, ChevronLeft, ChevronRight, ChevronDown, MapPin, Calendar as CalendarIcon, Wallet, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

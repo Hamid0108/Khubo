@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LISTINGS as MOCK_LISTINGS } from '../data/listings';
+import { LISTINGS as MOCK_LISTINGS } from '../mocks/listings';
 import { Listing } from '../types';
 
 export function useListing(id: string | undefined) {

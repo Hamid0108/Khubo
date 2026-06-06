@@ -26,7 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { useAuth } from '../lib/AuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../mocks/supabase';
 import { EditListingModal } from '../components/EditListingModal';
 import { CreateListingModal } from '../components/CreateListingModal';
 import { PhotoCarouselOverlay } from '../components/PhotoCarouselOverlay';
