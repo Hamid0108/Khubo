@@ -454,6 +454,7 @@ export default function Home() {
                             addSearch(searchQuery);
                             setSearchQuery('');
                             setIsStickySearchActive(true);
+                            setStickyActiveDropdown(null);
                           }}
                           aria-label="Search" 
                           className="bg-[#17294F] p-2.5 sm:p-2 md:p-2.5 rounded-full transition-all duration-200 shadow-md ml-0.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white flex-shrink-0"

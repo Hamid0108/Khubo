@@ -1,7 +1,7 @@
 export const EASE_OUT = [0.23, 1, 0.32, 1];
 
 export const TRANSITIONS = {
-  SPRING: { type: 'spring', stiffness: 300, damping: 30 },
+  SPRING: { type: 'tween', duration: 0.3, ease: EASE_OUT },
   EASE_OUT: { duration: 0.3, ease: EASE_OUT },
   EASE_IN_OUT: { duration: 0.3, ease: 'easeInOut' },
   FAST: { duration: 0.15 },

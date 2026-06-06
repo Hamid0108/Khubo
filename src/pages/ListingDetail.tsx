@@ -416,10 +416,10 @@ export default function ListingDetail() {
                 </div>
               </div>
               <button 
-                onClick={() => setShowAllAmenities(true)}
-                className={cn("px-6 py-3 border-2 border-[#17294F] text-[#17294F] rounded-xl font-bold hover:bg-[#17294F]/5 transition active:scale-95 inline-block", showAllAmenities && "hidden")}
+                onClick={() => setShowAllAmenities(!showAllAmenities)}
+                className="px-6 py-3 border-2 border-[#17294F] text-[#17294F] rounded-xl font-bold hover:bg-[#17294F]/5 transition active:scale-95 inline-block"
               >
-                Show all 28 amenities
+                {showAllAmenities ? 'Show less' : 'Show all 28 amenities'}
               </button>
             </div>
 

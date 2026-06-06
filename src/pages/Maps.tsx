@@ -393,6 +393,7 @@ export default function Maps() {
                     e.stopPropagation();
                     setSearchQuery('');
                     setIsSearchActive(true);
+                    setActiveDropdown(null);
                   }} 
                   className="bg-[#17294F] p-2 sm:p-3 md:p-3 rounded-full transition-all duration-200 shadow-md ml-1 sm:ml-2 md:ml-2 group flex-shrink-0 flex items-center justify-center cursor-pointer relative z-[70]"
                   aria-label="Search"

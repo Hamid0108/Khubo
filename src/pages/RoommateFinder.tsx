@@ -383,6 +383,7 @@ export default function RoommateFinder() {
                             e.stopPropagation();
                             setSearchQuery('');
                             setIsStickySearchActive(true);
+                            setActiveStickyDropdown(null);
                           }}
                           aria-label="Search" 
                           className="bg-[#17294F] p-2.5 sm:p-2 md:p-2.5 rounded-full transition-all duration-200 shadow-md ml-0.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white flex-shrink-0"

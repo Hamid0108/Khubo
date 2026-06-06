@@ -613,7 +613,7 @@ export default function Profile() {
                 <motion.div 
                   className="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center"
                   animate={{ x: isLandlord ? 24 : 0 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
                 >
                   {isLandlord && <Check className="w-3 h-3 text-[#2252D6]" strokeWidth={3} />}
                 </motion.div>
