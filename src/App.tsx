@@ -1,5 +1,6 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
+import { MotionConfig } from 'motion/react';
 import { ThemeProvider } from './lib/ThemeContext';
 import { AuthProvider } from './lib/AuthContext';
 import { ToastProvider } from './components/ToastProvider';
@@ -26,20 +27,22 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
-          <Router>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/listing/:id" element={<ListingDetail />} />
-                <Route path="/category/:categoryId" element={<CategoryListings />} />
-                <Route path="/maps" element={<Maps />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/roommate" element={<RoommateFinder />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/manage-listings" element={<ManageListings />} />
-              </Routes>
-            </Suspense>
-          </Router>
+          <MotionConfig reducedMotion="user">
+            <Router>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/listing/:id" element={<ListingDetail />} />
+                  <Route path="/category/:categoryId" element={<CategoryListings />} />
+                  <Route path="/maps" element={<Maps />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/roommate" element={<RoommateFinder />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/manage-listings" element={<ManageListings />} />
+                </Routes>
+              </Suspense>
+            </Router>
+          </MotionConfig>
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>

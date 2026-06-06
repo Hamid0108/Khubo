@@ -324,13 +324,13 @@ export default function ListingDetail() {
                 setIsSaved(!isSaved);
                 if (!isSaved) showToast('Listing saved to your wishlist!');
               }}
-              className="flex items-center gap-1.5 hover:bg-neutral-100 px-3 py-1.5 rounded-lg transition-colors font-semibold underline decoration-transparent hover:decoration-neutral-900 underline-offset-4"
+              className="flex items-center gap-2 hover:bg-neutral-100 px-4 py-2 rounded-xl transition-colors font-semibold underline decoration-transparent hover:decoration-neutral-900 underline-offset-4"
             >
               <Heart 
-                size={18} 
+                size={20} 
                 className={cn(isSaved ? "fill-[#FF385C] text-[#FF385C]" : "text-neutral-900")} 
               />
-              <span className="text-sm">{isSaved ? 'Saved' : 'Save'}</span>
+              <span className="text-base">{isSaved ? 'Saved' : 'Save'}</span>
             </button>
           </div>
         </div>
