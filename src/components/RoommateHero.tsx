@@ -187,9 +187,10 @@ export default function RoommateHero({
                   <AnimatePresence>
                     {activeDropdown === 'location' && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+                        animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
+                        exit={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+                        transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
                         className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 p-4 z-50 text-left"
                       >
                         <div className="space-y-4">
@@ -248,9 +249,10 @@ export default function RoommateHero({
                   <AnimatePresence>
                     {activeDropdown === 'budget' && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+                        animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
+                        exit={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+                        transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
                         className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 p-4 z-50 text-left"
                       >
                         <div className="space-y-3">

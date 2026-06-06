@@ -117,10 +117,10 @@ export default function Navbar() {
             <AnimatePresence>
               {isMenuOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
+                  initial={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+                  animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
+                  exit={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+                  transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
                   className="absolute right-0 top-[60px] w-64 bg-white rounded-xl shadow-[0_2px_16px_rgba(0,0,0,0.12)] border border-[#ebebeb] py-2 z-50 overflow-hidden"
                 >
                   {user ? (

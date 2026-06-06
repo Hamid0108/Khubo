@@ -63,9 +63,10 @@ export default function Filters({ onFilterChange, currentFilters }: FiltersProps
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+            animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
+            exit={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
+            transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
             className="absolute right-0 mt-2 w-[320px] md:w-[400px] bg-white rounded-2xl shadow-2xl border border-neutral-100 z-50 p-6 overflow-hidden"
           >
             <div className="flex items-center justify-between mb-6">
