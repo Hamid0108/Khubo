@@ -12,13 +12,73 @@ import { useNavigate } from 'react-router-dom';
 import RoommateModal from '../components/RoommateModal';
 import { Roommate } from '../types';
 import RoommateSearchDropdown from '../components/RoommateSearchDropdown';
+import { useRoommates } from '../hooks/useRoommates';
+import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../lib/AuthContext';
 
 const TAGS = [
   'ALL', 'Near MSU-IIT', 'All Female', 'Solo Room', 'Shared Room', 'All Male', 
   'Affordable', 'Bed Spacer', 'Boarding House', 'Studio', 'Apartment', 'Transient'
 ];
 
+function parseSearchQuery(query: string) {
+  let tempQuery = query.toLowerCase();
+  let parsedLocation = '';
+  let parsedBudget = '';
+
+  // 1. Parse Location
+  if (tempQuery.includes('cagayan')) {
+    parsedLocation = 'Cagayan de Oro';
+    tempQuery = tempQuery.replace(/cagayan(\s+de\s+oro)?/gi, '');
+  } else if (tempQuery.includes('iligan')) {
+    parsedLocation = 'Iligan City';
+    tempQuery = tempQuery.replace(/iligan(\s+city)?/gi, '');
+  } else if (tempQuery.includes('butuan')) {
+    parsedLocation = 'Butuan City';
+    tempQuery = tempQuery.replace(/butuan(\s+city)?/gi, '');
+  } else if (tempQuery.includes('msu-iit') || tempQuery.includes('msu iit')) {
+    parsedLocation = 'MSU-IIT';
+    tempQuery = tempQuery.replace(/msu[- ]iit/gi, '');
+  } else if (tempQuery.includes('pala-o') || tempQuery.includes('palao')) {
+    parsedLocation = 'Pala-o';
+    tempQuery = tempQuery.replace(/pala[-]?o/gi, '');
+  } else if (tempQuery.includes('tibanga')) {
+    parsedLocation = 'Tibanga';
+    tempQuery = tempQuery.replace(/tibanga/gi, '');
+  }
+
+  // 2. Parse Budget
+  const budget1k3kRegex = /(1k\s*-\s*3k|1000\s*-\s*3000|1500)/i;
+  const budget3k5kRegex = /(3k\s*-\s*5k|3000\s*-\s*5000|4000)/i;
+  const budget5kPlusRegex = /(5k\+|5000\+|6000|5k)/i;
+
+  if (budget1k3kRegex.test(tempQuery)) {
+    parsedBudget = '₱1k - ₱3k';
+    tempQuery = tempQuery.replace(budget1k3kRegex, '');
+  } else if (budget3k5kRegex.test(tempQuery)) {
+    parsedBudget = '₱3k - ₱5k';
+    tempQuery = tempQuery.replace(budget3k5kRegex, '');
+  } else if (budget5kPlusRegex.test(tempQuery)) {
+    parsedBudget = '₱5k+';
+    tempQuery = tempQuery.replace(budget5kPlusRegex, '');
+  }
+
+  // Clean up punctuation and stop words
+  const cleanQuery = tempQuery
+    .replace(/\b(in|at|for|with|budget|price|of|around|under|above|below)\b/gi, '')
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return {
+    location: parsedLocation,
+    budget: parsedBudget,
+    cleanQuery
+  };
+}
+
 export default function RoommateFinder() {
+  const { user } = useAuth();
   const [selectedTag, setSelectedTag] = useState('ALL');
   const [selectedRoommate, setSelectedRoommate] = useState<Roommate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,13 +91,88 @@ export default function RoommateFinder() {
   const [hideStickyDropdown, setHideStickyDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState('');
+
   React.useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [selectedTag, searchQuery]);
+    if (!searchQuery) return;
+
+    const parsed = parseSearchQuery(searchQuery);
+    let updated = false;
+
+    if (parsed.location && parsed.location !== selectedLocation) {
+      setSelectedLocation(parsed.location);
+      updated = true;
+    }
+    if (parsed.budget && parsed.budget !== selectedBudget) {
+      setSelectedBudget(parsed.budget);
+      updated = true;
+    }
+
+    if (parsed.location || parsed.budget) {
+      if (searchQuery !== parsed.cleanQuery) {
+        setSearchQuery(parsed.cleanQuery);
+      }
+    }
+  }, [searchQuery, selectedLocation, selectedBudget]);
+
+  // Aligned roommate list states
+  const { roommates: roommatesList, setRoommates: setRoommatesList, loading: roommatesLoading } = useRoommates();
+  const [isCreateRequestOpen, setIsCreateRequestOpen] = useState(false);
+  const [newRequest, setNewRequest] = useState({
+    name: 'Micheal B. Jordan',
+    age: 20,
+    gender: 'Female' as const,
+    university: 'MSU-IIT',
+    location: 'Tibanga, Iligan City',
+    budgetRange: 'P2500-P3000',
+    preferredPlace: "Layla's Residences",
+    bio: 'CS student, very quiet, stays up late coding. Looking for similar student boarders!',
+    tags: 'Quiet, Clean, CS Student'
+  });
+
+  React.useEffect(() => {
+    try {
+      const cached = localStorage.getItem('khubo_user_profile');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed) {
+          setNewRequest(prev => ({
+            ...prev,
+            name: parsed.nickname || parsed.full_name || prev.name,
+            location: parsed.location || prev.location,
+            university: parsed.school_or_company || prev.university,
+            bio: parsed.bio || prev.bio,
+            gender: parsed.gender || prev.gender,
+            tags: parsed.lifestyle && parsed.lifestyle.length > 0 
+              ? parsed.lifestyle.map((id: string) => {
+                  const labelMap: Record<string, string> = {
+                    pet_friendly: 'Pet-friendly', non_smoker: 'Non-smoker', vegan: 'Vegan',
+                    fitness: 'Gym lover', music: 'Into music', foodie: 'Foodie',
+                    social: 'Social butterfly', introvert: 'Introvert', remote_work: 'Remote worker', studious: 'Studious'
+                  };
+                  return labelMap[id] || id;
+                }).join(', ')
+              : prev.tags
+          }));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [user]);
+
+  React.useEffect(() => {
+    if (roommatesLoading) {
+      setLoading(true);
+    } else {
+      setLoading(true);
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [roommatesLoading, selectedTag, searchQuery, roommatesList]);
 
   React.useEffect(() => {
     if (isStickySearchActive) {
@@ -136,13 +271,80 @@ export default function RoommateFinder() {
   };
 
   const filteredRoommates = useMemo(() => {
-    let result = [...ROOMMATES];
+    let result = [...roommatesList];
     
     if (selectedTag !== 'ALL') {
+      const tagLower = selectedTag.toLowerCase();
+      result = result.filter(roommate => {
+        // 1. Direct tag match (case-insensitive)
+        const hasTag = roommate.tags.some(tag => tag.toLowerCase() === tagLower);
+        if (hasTag) return true;
+        
+        // 2. Direct preferred place match
+        const hasPlace = roommate.preferredPlace.toLowerCase().includes(tagLower);
+        if (hasPlace) return true;
+        
+        // 3. Special Semantic Tags matching
+        if (tagLower === 'near msu-iit') {
+          return roommate.university.toLowerCase().includes('msu-iit') || 
+                 roommate.location.toLowerCase().includes('msu-iit') ||
+                 roommate.preferredPlace.toLowerCase().includes('msu-iit');
+        }
+        if (tagLower === 'all female') {
+          return roommate.gender.toLowerCase() === 'female';
+        }
+        if (tagLower === 'all male') {
+          return roommate.gender.toLowerCase() === 'male';
+        }
+        if (tagLower === 'solo room') {
+          return roommate.tags.some(t => t.toLowerCase().includes('solo')) || 
+                 roommate.preferredPlace.toLowerCase().includes('single') ||
+                 roommate.preferredPlace.toLowerCase().includes('solo');
+        }
+        if (tagLower === 'shared room') {
+          return roommate.tags.some(t => t.toLowerCase().includes('shared')) || 
+                 roommate.preferredPlace.toLowerCase().includes('boarders') ||
+                 roommate.preferredPlace.toLowerCase().includes('dormitory') ||
+                 roommate.preferredPlace.toLowerCase().includes('shared');
+        }
+        if (tagLower === 'affordable') {
+          const match = roommate.budgetRange.match(/\d+/);
+          if (match) {
+            const val = parseInt(match[0], 10);
+            return val <= 2500;
+          }
+          return false;
+        }
+        
+        return false;
+      });
+    }
+
+    // Filter by Selected Location
+    if (selectedLocation) {
+      const loc = selectedLocation.toLowerCase();
       result = result.filter(roommate => 
-        roommate.tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase()) ||
-        roommate.preferredPlace.toLowerCase().includes(selectedTag.toLowerCase())
+        roommate.location.toLowerCase().includes(loc) || 
+        roommate.preferredPlace.toLowerCase().includes(loc) ||
+        roommate.university.toLowerCase().includes(loc)
       );
+    }
+
+    // Filter by Selected Budget Range
+    if (selectedBudget) {
+      result = result.filter(roommate => {
+        const numbers = roommate.budgetRange.match(/\d+/g);
+        if (!numbers) return true;
+        const maxBudget = Math.max(...numbers.map(Number));
+        if (selectedBudget === '₱1k - ₱3k') {
+          return maxBudget <= 3000;
+        } else if (selectedBudget === '₱3k - ₱5k') {
+          return maxBudget >= 3000 && maxBudget <= 5000;
+        } else if (selectedBudget === '₱5k+') {
+          return maxBudget >= 5000;
+        }
+        return true;
+      });
     }
 
     if (searchQuery.trim() !== '') {
@@ -159,7 +361,7 @@ export default function RoommateFinder() {
     }
 
     return result;
-  }, [selectedTag, searchQuery]);
+  }, [selectedTag, searchQuery, roommatesList, selectedLocation, selectedBudget]);
 
   const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -181,6 +383,10 @@ export default function RoommateFinder() {
         onOpenMobileSearch={() => setIsSearchActive(true)}
         onSelectRoommate={openProfile}
         suppressDropdown={displaySearch}
+        selectedLocation={selectedLocation}
+        setSelectedLocation={setSelectedLocation}
+        selectedBudget={selectedBudget}
+        setSelectedBudget={setSelectedBudget}
       />
       <div id="roommate-results-anchor" />
       <div ref={observerRef} className="w-full h-[1px] invisible pointer-events-none" />
@@ -216,6 +422,7 @@ export default function RoommateFinder() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 setHideStickyDropdown(true);
+                                setIsStickySearchActive(false);
                               }
                             }}
                             placeholder="Search rooms, location..."
@@ -275,7 +482,21 @@ export default function RoommateFinder() {
                           >
                             <div className="flex items-center gap-1 md:gap-2.5 min-w-0">
                               <MapPin className="text-[#2252D6] flex-shrink-0 w-4 h-4 sm:w-4 sm:h-4 md:w-[15px] md:h-[15px]" />
-                              <span className={`text-xs sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>Location</span>
+                              <span className={`text-xs sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>
+                                {selectedLocation || 'Location'}
+                              </span>
+                              {selectedLocation && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedLocation('');
+                                    setSearchQuery('');
+                                  }}
+                                  className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                                >
+                                  <X size={10} />
+                                </button>
+                              )}
                             </div>
                             <ChevronDown className={`flex-shrink-0 opacity-50 text-neutral-500 group-hover:opacity-100 transition-all w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeStickyDropdown === 'location' ? 'rotate-180' : ''}`} />
                           </div>
@@ -302,10 +523,14 @@ export default function RoommateFinder() {
                                       />
                                     </div>
                                     <div className="space-y-1">
-                                      {['MSU-IIT', 'Pala-o', 'Tibanga'].map((loc) => (
+                                      {['Iligan City', 'Cagayan de Oro', 'Butuan City', 'MSU-IIT', 'Pala-o', 'Tibanga'].map((loc) => (
                                         <button 
                                           key={loc}
-                                          onClick={() => { setSearchQuery(loc); setActiveStickyDropdown(null); }}
+                                          onClick={() => { 
+                                            setSelectedLocation(loc);
+                                            setSearchQuery(loc); 
+                                            setActiveStickyDropdown(null); 
+                                          }}
                                           className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-neutral-50 transition-colors group"
                                         >
                                           <div className="w-6 h-6 rounded bg-[#2252D6]/10 flex items-center justify-center text-[#2252D6] group-hover:bg-[#2252D6] group-hover:text-white transition-all">
@@ -342,7 +567,21 @@ export default function RoommateFinder() {
                           >
                             <div className="flex items-center gap-1 md:gap-2.5 min-w-0">
                               <Wallet className="text-[#2252D6] flex-shrink-0 w-4 h-4 sm:w-4 sm:h-4 md:w-[15px] md:h-[15px]" />
-                              <span className={`text-xs sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>Budget</span>
+                              <span className={`text-xs sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>
+                                {selectedBudget || 'Budget'}
+                              </span>
+                              {selectedBudget && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedBudget('');
+                                    setSearchQuery('');
+                                  }}
+                                  className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                                >
+                                  <X size={10} />
+                                </button>
+                              )}
                             </div>
                             <ChevronDown className={`flex-shrink-0 opacity-50 text-neutral-500 group-hover:opacity-100 transition-all w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeStickyDropdown === 'budget' ? 'rotate-180' : ''}`} />
                           </div>
@@ -359,13 +598,17 @@ export default function RoommateFinder() {
                                 <div className="space-y-2">
                                   <div className="grid grid-cols-1 gap-1">
                                     {[
-                                      { label: '₱1k - ₱3k', val: '1500' },
-                                      { label: '₱3k - ₱5k', val: '4000' },
-                                      { label: '₱5k+', val: '6000' }
+                                      { label: '₱1k - ₱3k' },
+                                      { label: '₱3k - ₱5k' },
+                                      { label: '₱5k+' }
                                     ].map((range) => (
                                       <button 
                                         key={range.label}
-                                        onClick={() => { setSearchQuery(range.val); setActiveStickyDropdown(null); }}
+                                        onClick={() => { 
+                                          setSelectedBudget(range.label);
+                                          setSearchQuery(range.label); 
+                                          setActiveStickyDropdown(null); 
+                                        }}
                                         className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                                       >
                                         <span className="font-medium text-neutral-900 text-xs">{range.label}</span>
@@ -450,19 +693,27 @@ export default function RoommateFinder() {
                 </div>
               </div>
               
-              <div className="hidden md:flex items-center gap-3">
-                <button 
-                  onClick={() => scroll(recommendedRef, 'left')}
-                  className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-90"
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsCreateRequestOpen(true)}
+                  className="px-5 py-2.5 bg-[#17294F] hover:bg-[#1e3466] text-white rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
-                  <ChevronLeft size={20} />
+                  + Post Request
                 </button>
-                <button 
-                  onClick={() => scroll(recommendedRef, 'right')}
-                  className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-90"
-                >
-                  <ChevronRight size={20} />
-                </button>
+                <div className="hidden md:flex items-center gap-3">
+                  <button 
+                    onClick={() => scroll(recommendedRef, 'left')}
+                    className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-95"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button 
+                    onClick={() => scroll(recommendedRef, 'right')}
+                    className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-95"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -564,6 +815,183 @@ export default function RoommateFinder() {
         isOpen={isModalOpen} 
         onClose={closeProfile} 
       />
+
+      {/* Create Roommate Request Modal */}
+      <AnimatePresence>
+        {isCreateRequestOpen && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setIsCreateRequestOpen(false)}
+               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+               initial={{ opacity: 0, scale: 0.95, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               exit={{ opacity: 0, scale: 0.95, y: 20 }}
+               className="relative w-full max-w-md bg-white rounded-[2rem] overflow-hidden shadow-2xl z-10 text-neutral-900"
+            >
+              <div className="flex items-center justify-center p-4 border-b border-neutral-100 relative">
+                 <button 
+                   onClick={() => setIsCreateRequestOpen(false)}
+                   className="absolute left-4 p-2 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer"
+                 >
+                   <X size={20} />
+                 </button>
+                 <h2 className="font-bold text-lg">Post Roommate Request</h2>
+              </div>
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const tagsArr = newRequest.tags.split(',').map(t => t.trim()).filter(Boolean);
+                  const newRoommate: Roommate = {
+                    id: 'rm-user-' + Date.now(),
+                    name: newRequest.name,
+                    age: Number(newRequest.age),
+                    gender: newRequest.gender,
+                    university: newRequest.university,
+                    location: newRequest.location,
+                    budgetRange: newRequest.budgetRange,
+                    preferredPlace: newRequest.preferredPlace,
+                    bio: newRequest.bio,
+                    image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newRequest.name}`,
+                    tags: tagsArr.length > 0 ? tagsArr : ['Quiet', 'Clean']
+                  };
+                  
+                  try {
+                    await supabase.from('roommates').insert({
+                      id: newRoommate.id,
+                      name: newRoommate.name,
+                      age: newRoommate.age,
+                      gender: newRoommate.gender,
+                      university: newRoommate.university,
+                      location: newRoommate.location,
+                      budget_range: newRoommate.budgetRange,
+                      preferred_place: newRoommate.preferredPlace,
+                      bio: newRoommate.bio,
+                      image: newRoommate.image,
+                      tags: newRoommate.tags,
+                      user_id: user?.id || null
+                    });
+                  } catch (err) {
+                    console.error('Failed to save roommate to Supabase:', err);
+                  }
+                  
+                  setRoommatesList([newRoommate, ...roommatesList]);
+                  setIsCreateRequestOpen(false);
+                  
+                  // Reset form
+                  setNewRequest({
+                    name: 'Micheal B. Jordan',
+                    age: 20,
+                    gender: 'Female',
+                    university: 'MSU-IIT',
+                    location: 'Tibanga, Iligan City',
+                    budgetRange: 'P2500-P3000',
+                    preferredPlace: "Layla's Residences",
+                    bio: 'CS student, very quiet, stays up late coding. Looking for similar student boarders!',
+                    tags: 'Quiet, Clean, CS Student'
+                  });
+                  alert('Roommate request posted successfully!');
+                }}
+                className="p-6 space-y-4 text-left max-h-[75vh] overflow-y-auto"
+              >
+                <div>
+                  <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Your Name</label>
+                  <input 
+                    type="text" 
+                    value={newRequest.name} 
+                    onChange={e => setNewRequest({ ...newRequest, name: e.target.value })}
+                    required
+                    className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Age</label>
+                    <input 
+                      type="number" 
+                      value={newRequest.age} 
+                      onChange={e => setNewRequest({ ...newRequest, age: Number(e.target.value) })}
+                      required
+                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Gender</label>
+                    <select 
+                      value={newRequest.gender} 
+                      onChange={e => setNewRequest({ ...newRequest, gender: e.target.value as any })}
+                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all bg-white"
+                    >
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Preferred Location</label>
+                    <input 
+                      type="text" 
+                      value={newRequest.location} 
+                      onChange={e => setNewRequest({ ...newRequest, location: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Monthly Budget</label>
+                    <input 
+                      type="text" 
+                      value={newRequest.budgetRange} 
+                      onChange={e => setNewRequest({ ...newRequest, budgetRange: e.target.value })}
+                      placeholder="e.g. P2500-P3000"
+                      required
+                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Brief Bio</label>
+                  <textarea 
+                    value={newRequest.bio} 
+                    onChange={e => setNewRequest({ ...newRequest, bio: e.target.value })}
+                    required
+                    rows={3}
+                    className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Tags (comma-separated)</label>
+                  <input 
+                    type="text" 
+                    value={newRequest.tags} 
+                    onChange={e => setNewRequest({ ...newRequest, tags: e.target.value })}
+                    placeholder="e.g. Quiet, Clean, Gym-goer"
+                    required
+                    className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-[#17294F] text-white py-3 rounded-xl font-bold uppercase tracking-widest mt-2 hover:bg-[#1e3466] transition-colors shadow-md cursor-pointer"
+                >
+                  Submit Request
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -12,6 +12,12 @@ interface HeroProps {
   setIsSearchActive?: (active: boolean) => void;
   onOpenMobileSearch?: () => void;
   suppressDropdown?: boolean;
+  selectedLocation?: string;
+  setSelectedLocation?: (val: string) => void;
+  selectedDates?: string;
+  setSelectedDates?: (val: string) => void;
+  selectedBudget?: string;
+  setSelectedBudget?: (val: string) => void;
 }
 
 export default function Hero({
@@ -20,7 +26,13 @@ export default function Hero({
   isSearchActive = false,
   setIsSearchActive = () => {},
   onOpenMobileSearch = () => {},
-  suppressDropdown = false
+  suppressDropdown = false,
+  selectedLocation = '',
+  setSelectedLocation = () => {},
+  selectedDates = '',
+  setSelectedDates = () => {},
+  selectedBudget = '',
+  setSelectedBudget = () => {}
 }: HeroProps) {
   const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState<'location' | 'dates' | 'budget' | 'general' | null>(null);
@@ -117,6 +129,7 @@ export default function Hero({
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           setHideDropdown(true);
+                          setIsSearchActive(false);
                         }
                       }}
                       placeholder="what are you looking for?"
@@ -175,9 +188,23 @@ export default function Hero({
                     >
                       <div className="flex items-center gap-1 md:gap-3 min-w-0">
                         <MapPin className={`${activeDropdown === 'location' ? 'text-[#2252D6]' : 'text-[#2252D6]'} flex-shrink-0 w-3 h-3 md:w-[16px] md:h-[16px]`} />
-                        <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'location' ? 'text-neutral-900' : 'text-white'}`}>Location</span>
+                        <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'location' ? 'text-neutral-900' : 'text-white'}`}>
+                          {selectedLocation || 'Location'}
+                        </span>
+                        {selectedLocation && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLocation('');
+                              setSearchQuery('');
+                            }}
+                            className="p-0.5 hover:bg-white/20 rounded-full text-white/85 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                          >
+                            <X size={12} className={activeDropdown === 'location' ? 'text-neutral-900' : 'text-white'} />
+                          </button>
+                        )}
                       </div>
-                      <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-all w-3 h-3 md:w-4 md:h-4 ${activeDropdown === 'location' ? 'rotate-180 text-neutral-900' : ''}`} />
+                      <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-all w-3 h-3 md:w-4 md:h-4 ${activeDropdown === 'location' ? 'rotate-180 text-neutral-950' : ''}`} />
                     </div>
 
                     <AnimatePresence>
@@ -196,6 +223,8 @@ export default function Hero({
                                 <input 
                                   type="text"
                                   placeholder="Search..."
+                                  value={searchQuery}
+                                  onChange={(e) => setSearchQuery(e.target.value)}
                                   className="w-full bg-transparent border-none outline-none text-xs md:text-sm font-medium text-neutral-900 placeholder:text-neutral-400 p-0 focus:ring-0"
                                 />
                               </div>
@@ -203,7 +232,11 @@ export default function Hero({
                                 {['Iligan City', 'Cagayan de Oro', 'Butuan City'].map((loc) => (
                                   <button 
                                     key={loc}
-                                    onClick={() => { navigate('/maps'); setActiveDropdown(null); }}
+                                    onClick={() => { 
+                                      setSelectedLocation(loc); 
+                                      setSearchQuery(loc); 
+                                      setActiveDropdown(null); 
+                                    }}
                                     className="w-full flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-xl hover:bg-neutral-50 transition-colors group"
                                   >
                                     <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-[#2252D6]/10 flex items-center justify-center text-[#2252D6] group-hover:bg-[#2252D6] group-hover:text-white transition-all flex-shrink-0">
@@ -238,10 +271,24 @@ export default function Hero({
                     >
                       <div className="flex items-center gap-1 md:gap-3 min-w-0">
                         <CalendarIcon className="text-[#2252D6] flex-shrink-0 w-3 h-3 md:w-[16px] md:h-[16px]" />
-                        <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'dates' ? 'text-neutral-900' : 'text-white'}`}>Dates</span>
+                        <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'dates' ? 'text-neutral-900' : 'text-white'}`}>
+                          {selectedDates || 'Dates'}
+                        </span>
+                        {selectedDates && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDates('');
+                              setSearchQuery('');
+                            }}
+                            className="p-0.5 hover:bg-white/20 rounded-full text-white/85 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                          >
+                            <X size={12} className={activeDropdown === 'dates' ? 'text-neutral-900' : 'text-white'} />
+                          </button>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-all w-3 h-3 md:w-4 md:h-4 ${activeDropdown === 'dates' ? 'rotate-180 text-neutral-900' : ''}`} />
+                        <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-all w-3 h-3 md:w-4 md:h-4 ${activeDropdown === 'dates' ? 'rotate-180 text-neutral-950' : ''}`} />
                       </div>
                     </div>
 
@@ -254,7 +301,14 @@ export default function Hero({
                           transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
                           className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 overflow-hidden z-50 text-left"
                         >
-                          <DateScrollPicker viewportHeight={132} />
+                          <DateScrollPicker 
+                            viewportHeight={132} 
+                            onMonthClick={(m) => {
+                              setSelectedDates(m);
+                              setSearchQuery(searchQuery ? `${searchQuery} in ${m}` : m);
+                              setActiveDropdown(null);
+                            }}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -278,9 +332,23 @@ export default function Hero({
                     >
                       <div className="flex items-center gap-1 md:gap-3 min-w-0">
                         <Wallet className="text-[#2252D6] flex-shrink-0 w-3 h-3 md:w-[16px] md:h-[16px]" />
-                        <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'budget' ? 'text-neutral-900' : 'text-white'}`}>Budget</span>
+                        <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'budget' ? 'text-neutral-900' : 'text-white'}`}>
+                          {selectedBudget || 'Budget'}
+                        </span>
+                        {selectedBudget && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBudget('');
+                              setSearchQuery('');
+                            }}
+                            className="p-0.5 hover:bg-white/20 rounded-full text-white/85 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                          >
+                            <X size={12} className={activeDropdown === 'budget' ? 'text-neutral-900' : 'text-white'} />
+                          </button>
+                        )}
                       </div>
-                      <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-all w-3 h-3 md:w-4 md:h-4 ${activeDropdown === 'budget' ? 'rotate-180 text-neutral-900' : ''}`} />
+                      <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-all w-3 h-3 md:w-4 md:h-4 ${activeDropdown === 'budget' ? 'rotate-180 text-neutral-950' : ''}`} />
                     </div>
 
                     <AnimatePresence>
@@ -301,7 +369,11 @@ export default function Hero({
                               ].map((range) => (
                                 <button 
                                   key={range.label}
-                                  onClick={() => { navigate('/maps'); setActiveDropdown(null); }}
+                                  onClick={() => { 
+                                    setSelectedBudget(range.label); 
+                                    setSearchQuery(range.label); 
+                                    setActiveDropdown(null); 
+                                  }}
                                   className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                                 >
                                   <span className="font-medium text-neutral-900 text-xs md:text-sm">{range.label}</span>

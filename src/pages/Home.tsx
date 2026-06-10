@@ -9,7 +9,7 @@ import { useListings } from '../hooks/useListings';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useMemo, useRef, useDeferredValue } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight, Search, MapPin, Calendar as CalendarIcon, Wallet, ChevronDown, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Search, MapPin, Calendar as CalendarIcon, Wallet, ChevronDown, X, Map } from 'lucide-react';
 import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
 import { useSearchHistory } from '../hooks/useSearchHistory';
@@ -29,6 +29,68 @@ const ListingCarouselSkeleton = ({ prefix }: { prefix: string }) => (
   </>
 );
 
+function parseSearchQuery(query: string) {
+  let tempQuery = query.toLowerCase();
+  let parsedLocation = '';
+  let parsedDates = '';
+  let parsedBudget = '';
+
+  // 1. Parse Location
+  if (tempQuery.includes('cagayan')) {
+    parsedLocation = 'Cagayan de Oro';
+    tempQuery = tempQuery.replace(/cagayan(\s+de\s+oro)?/gi, '');
+  } else if (tempQuery.includes('iligan')) {
+    parsedLocation = 'Iligan City';
+    tempQuery = tempQuery.replace(/iligan(\s+city)?/gi, '');
+  } else if (tempQuery.includes('butuan')) {
+    parsedLocation = 'Butuan City';
+    tempQuery = tempQuery.replace(/butuan(\s+city)?/gi, '');
+  }
+
+  // 2. Parse Dates (Months)
+  const months = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
+  ];
+  for (const month of months) {
+    if (tempQuery.includes(month)) {
+      parsedDates = month.charAt(0).toUpperCase() + month.slice(1);
+      tempQuery = tempQuery.replace(new RegExp(month, 'gi'), '');
+      break;
+    }
+  }
+
+  // 3. Parse Budget
+  const budget1k3kRegex = /(1k\s*-\s*3k|1000\s*-\s*3000|1500)/i;
+  const budget3k5kRegex = /(3k\s*-\s*5k|3000\s*-\s*5000|4000)/i;
+  const budget5kPlusRegex = /(5k\+|5000\+|6000|5k)/i;
+
+  if (budget1k3kRegex.test(tempQuery)) {
+    parsedBudget = '₱1k - ₱3k';
+    tempQuery = tempQuery.replace(budget1k3kRegex, '');
+  } else if (budget3k5kRegex.test(tempQuery)) {
+    parsedBudget = '₱3k - ₱5k';
+    tempQuery = tempQuery.replace(budget3k5kRegex, '');
+  } else if (budget5kPlusRegex.test(tempQuery)) {
+    parsedBudget = '₱5k+';
+    tempQuery = tempQuery.replace(budget5kPlusRegex, '');
+  }
+
+  // Clean up punctuation and stop words
+  const cleanQuery = tempQuery
+    .replace(/\b(in|at|for|with|budget|price|of|around|under|above|below)\b/gi, '')
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return {
+    location: parsedLocation,
+    dates: parsedDates,
+    budget: parsedBudget,
+    cleanQuery
+  };
+}
+
 export default function Home() {
   const { listings: LISTINGS, loading: listingsLoading } = useListings();
   const { history, addSearch, removeSearch } = useSearchHistory();
@@ -38,6 +100,37 @@ export default function Home() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isStickySearchActive, setIsStickySearchActive] = useState(false);
   const [hideStickyDropdown, setHideStickyDropdown] = useState(false);
+  
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedDates, setSelectedDates] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState('');
+
+  React.useEffect(() => {
+    if (!searchQuery) return;
+
+    const parsed = parseSearchQuery(searchQuery);
+    let updated = false;
+
+    if (parsed.location && parsed.location !== selectedLocation) {
+      setSelectedLocation(parsed.location);
+      updated = true;
+    }
+    if (parsed.dates && parsed.dates !== selectedDates) {
+      setSelectedDates(parsed.dates);
+      updated = true;
+    }
+    if (parsed.budget && parsed.budget !== selectedBudget) {
+      setSelectedBudget(parsed.budget);
+      updated = true;
+    }
+
+    if (parsed.location || parsed.dates || parsed.budget) {
+      if (searchQuery !== parsed.cleanQuery) {
+        setSearchQuery(parsed.cleanQuery);
+      }
+    }
+  }, [searchQuery, selectedLocation, selectedDates, selectedBudget]);
+
   
   React.useEffect(() => {
     if (isStickySearchActive) {
@@ -138,6 +231,24 @@ export default function Home() {
     // Filter by Rating
     result = result.filter(listing => listing.rating >= filters.minRating);
 
+    // Filter by Selected Location
+    if (selectedLocation) {
+      result = result.filter(listing => 
+        listing.location.toLowerCase().includes(selectedLocation.toLowerCase())
+      );
+    }
+
+    // Filter by Selected Budget Range
+    if (selectedBudget) {
+      if (selectedBudget === '₱1k - ₱3k' || selectedBudget === '1500') {
+        result = result.filter(listing => listing.price >= 1000 && listing.price <= 3000);
+      } else if (selectedBudget === '₱3k - ₱5k' || selectedBudget === '4000') {
+        result = result.filter(listing => listing.price >= 3000 && listing.price <= 5000);
+      } else if (selectedBudget === '₱5k+' || selectedBudget === '6000') {
+        result = result.filter(listing => listing.price >= 5000);
+      }
+    }
+
     // Filter by Search Query (keywords or numbers)
     if (deferredSearchQuery.trim() !== '') {
       const query = deferredSearchQuery.toLowerCase().trim();
@@ -169,7 +280,7 @@ export default function Home() {
     }
 
     return result;
-  }, [selectedCategory, filters, deferredSearchQuery, LISTINGS]);
+  }, [selectedCategory, filters, deferredSearchQuery, LISTINGS, selectedLocation, selectedBudget]);
 
   const handleListingClick = (id: string) => {
     navigate(`/listing/${id}`);
@@ -194,6 +305,12 @@ export default function Home() {
         setIsSearchActive={setIsSearchActive}
         onOpenMobileSearch={() => setIsSearchActive(true)}
         suppressDropdown={displaySearch}
+        selectedLocation={selectedLocation}
+        setSelectedLocation={setSelectedLocation}
+        selectedDates={selectedDates}
+        setSelectedDates={setSelectedDates}
+        selectedBudget={selectedBudget}
+        setSelectedBudget={setSelectedBudget}
       />
       
       {/* Search History section under Hero */}
@@ -236,6 +353,8 @@ export default function Home() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 setHideStickyDropdown(true);
+                                addSearch(searchQuery);
+                                setIsStickySearchActive(false);
                               }
                             }}
                             placeholder="Search rooms, location..."
@@ -298,7 +417,21 @@ export default function Home() {
                           >
                             <div className="flex items-center gap-1 md:gap-2.5 min-w-0">
                               <MapPin className="text-[#2252D6] flex-shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[15px] md:h-[15px]" />
-                              <span className={`text-[10px] sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>Location</span>
+                              <span className={`text-[10px] sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>
+                                {selectedLocation || 'Location'}
+                              </span>
+                              {selectedLocation && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedLocation('');
+                                    setSearchQuery('');
+                                  }}
+                                  className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                                >
+                                  <X size={10} />
+                                </button>
+                              )}
                             </div>
                             <ChevronDown className={`flex-shrink-0 opacity-50 text-neutral-500 group-hover:opacity-100 transition-all w-3 h-3 sm:w-4 sm:h-4 ${stickyActiveDropdown === 'location' ? 'rotate-180' : ''}`} />
                           </div>
@@ -328,7 +461,11 @@ export default function Home() {
                                       {POPULAR_LOCATIONS.map((loc) => (
                                         <button 
                                           key={loc}
-                                          onClick={() => { setSearchQuery(loc); setStickyActiveDropdown(null); }}
+                                          onClick={() => { 
+                                            setSelectedLocation(loc); 
+                                            setSearchQuery(loc); 
+                                            setStickyActiveDropdown(null); 
+                                          }}
                                           className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-neutral-50 transition-colors group"
                                         >
                                           <div className="w-6 h-6 rounded bg-[#2252D6]/10 flex items-center justify-center text-[#2252D6] group-hover:bg-[#2252D6] group-hover:text-white transition-all flex-shrink-0">
@@ -365,7 +502,21 @@ export default function Home() {
                           >
                             <div className="flex items-center gap-1 md:gap-3 min-w-0">
                               <CalendarIcon className="text-[#2252D6] flex-shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[15px] md:h-[15px]" strokeWidth={2} />
-                              <span className={`text-[10px] sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>Dates</span>
+                              <span className={`text-[10px] sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>
+                                {selectedDates || 'Dates'}
+                              </span>
+                              {selectedDates && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedDates('');
+                                    setSearchQuery('');
+                                  }}
+                                  className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                                >
+                                  <X size={10} />
+                                </button>
+                              )}
                             </div>
                             <div className="flex items-center gap-1 md:gap-2">
                               <ChevronDown className={`flex-shrink-0 opacity-50 text-neutral-500 transition-all w-3 h-3 sm:w-4 sm:h-4 ${stickyActiveDropdown === 'dates' ? 'rotate-180 opacity-50' : 'group-hover:opacity-100'}`} />
@@ -384,6 +535,7 @@ export default function Home() {
                                 <DateScrollPicker 
                                   viewportHeight={132} 
                                   onMonthClick={(m) => { 
+                                    setSelectedDates(m);
                                     setSearchQuery(prev => prev ? `${prev} in ${m}` : m); 
                                     setStickyActiveDropdown(null); 
                                   }} 
@@ -413,7 +565,21 @@ export default function Home() {
                           >
                             <div className="flex items-center gap-1 md:gap-2.5 min-w-0">
                               <Wallet className="text-[#2252D6] flex-shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[15px] md:h-[15px]" />
-                              <span className={`text-[10px] sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>Budget</span>
+                              <span className={`text-[10px] sm:text-sm md:text-sm font-bold truncate md:whitespace-nowrap text-neutral-800`}>
+                                {selectedBudget || 'Budget'}
+                              </span>
+                              {selectedBudget && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedBudget('');
+                                    setSearchQuery('');
+                                  }}
+                                  className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                                >
+                                  <X size={10} />
+                                </button>
+                              )}
                             </div>
                             <ChevronDown className={`flex-shrink-0 opacity-50 text-neutral-500 group-hover:opacity-100 transition-all w-3 h-3 sm:w-4 sm:h-4 ${stickyActiveDropdown === 'budget' ? 'rotate-180' : ''}`} />
                           </div>
@@ -436,7 +602,11 @@ export default function Home() {
                                     ].map((range) => (
                                       <button 
                                         key={range.label}
-                                        onClick={() => { setSearchQuery(range.val); setStickyActiveDropdown(null); }}
+                                        onClick={() => { 
+                                          setSelectedBudget(range.label); 
+                                          setSearchQuery(range.label); 
+                                          setStickyActiveDropdown(null); 
+                                        }}
                                         className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                                       >
                                         <span className="font-medium text-neutral-900 text-xs whitespace-nowrap">{range.label}</span>
@@ -663,6 +833,17 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Floating Map Button */}
+      <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+        <button
+          onClick={() => navigate('/maps')}
+          className="flex items-center gap-2 bg-[#17294F] hover:bg-[#19305c] text-white font-bold px-6 py-3 rounded-full shadow-2xl transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm uppercase tracking-wider cursor-pointer border border-white/10"
+        >
+          <Map size={16} />
+          Show map
+        </button>
+      </div>
 
       <Footer />
       <BottomNav />

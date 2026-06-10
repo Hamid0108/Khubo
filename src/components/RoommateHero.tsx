@@ -13,6 +13,10 @@ interface RoommateHeroProps {
   onOpenMobileSearch?: () => void;
   onSelectRoommate?: (roommate: Roommate) => void;
   suppressDropdown?: boolean;
+  selectedLocation?: string;
+  setSelectedLocation?: (val: string) => void;
+  selectedBudget?: string;
+  setSelectedBudget?: (val: string) => void;
 }
 
 export default function RoommateHero({
@@ -22,7 +26,11 @@ export default function RoommateHero({
   setIsSearchActive = () => {},
   onOpenMobileSearch = () => {},
   onSelectRoommate,
-  suppressDropdown = false
+  suppressDropdown = false,
+  selectedLocation = '',
+  setSelectedLocation = () => {},
+  selectedBudget = '',
+  setSelectedBudget = () => {}
 }: RoommateHeroProps) {
   const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState<'location' | 'budget' | 'general' | null>(null);
@@ -121,6 +129,7 @@ export default function RoommateHero({
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         setHideDropdown(true);
+                        setIsSearchActive(false);
                       }
                     }}
                     placeholder="what are you looking for?"
@@ -179,7 +188,21 @@ export default function RoommateHero({
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
                       <MapPin className="text-[#2252D6] flex-shrink-0 w-3 h-3 md:w-[16px] md:h-[16px]" />
-                      <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'location' ? 'text-neutral-900' : 'text-white'}`}>Location</span>
+                      <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'location' ? 'text-neutral-900' : 'text-white'}`}>
+                        {selectedLocation || 'Location'}
+                      </span>
+                      {selectedLocation && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLocation('');
+                            setSearchQuery('');
+                          }}
+                          className="p-0.5 hover:bg-white/20 rounded-full text-white/85 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                        >
+                          <X size={12} className={activeDropdown === 'location' ? 'text-neutral-900' : 'text-white'} />
+                        </button>
+                      )}
                     </div>
                     <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity w-3 h-3 md:w-4 md:h-4 ml-1 ${activeDropdown === 'location' ? 'rotate-180 text-neutral-900' : ''}`} />
                   </div>
@@ -200,6 +223,8 @@ export default function RoommateHero({
                                 <input 
                                   type="text"
                                   placeholder="Search location..."
+                                  value={searchQuery}
+                                  onChange={(e) => setSearchQuery(e.target.value)}
                                   className="w-full bg-transparent border-none outline-none text-sm font-medium text-neutral-900 placeholder:text-neutral-400 p-0 focus:ring-0"
                                 />
                               </div>
@@ -207,7 +232,11 @@ export default function RoommateHero({
                               {['Iligan City', 'Cagayan de Oro', 'Butuan City'].map((loc) => (
                                 <button 
                                   key={loc}
-                                  onClick={() => { setActiveDropdown(null); navigate('/roommate-finder'); }}
+                                  onClick={() => { 
+                                    setSelectedLocation(loc); 
+                                    setSearchQuery(loc); 
+                                    setActiveDropdown(null); 
+                                  }}
                                   className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors group"
                                 >
                                   <div className="w-8 h-8 rounded-lg bg-[#2252D6]/10 flex items-center justify-center text-[#2252D6] group-hover:bg-[#2252D6] group-hover:text-white transition-all">
@@ -241,7 +270,21 @@ export default function RoommateHero({
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
                       <Wallet className="text-[#2252D6] flex-shrink-0 w-3 h-3 md:w-[16px] md:h-[16px]" />
-                      <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'budget' ? 'text-neutral-900' : 'text-white'}`}>Budget</span>
+                      <span className={`text-[10px] md:text-base font-bold truncate md:whitespace-nowrap ${activeDropdown === 'budget' ? 'text-neutral-900' : 'text-white'}`}>
+                        {selectedBudget || 'Budget'}
+                      </span>
+                      {selectedBudget && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBudget('');
+                            setSearchQuery('');
+                          }}
+                          className="p-0.5 hover:bg-white/20 rounded-full text-white/85 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                        >
+                          <X size={12} className={activeDropdown === 'budget' ? 'text-neutral-900' : 'text-white'} />
+                        </button>
+                      )}
                     </div>
                     <ChevronDown className={`flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity w-3 h-3 md:w-4 md:h-4 ml-1 ${activeDropdown === 'budget' ? 'rotate-180 text-neutral-900' : ''}`} />
                   </div>
@@ -264,7 +307,11 @@ export default function RoommateHero({
                             ].map((range) => (
                               <button 
                                 key={range.label}
-                                onClick={() => { setActiveDropdown(null); navigate('/roommate'); }}
+                                onClick={() => { 
+                                  setSelectedBudget(range.label); 
+                                  setSearchQuery(range.label); 
+                                  setActiveDropdown(null); 
+                                }}
                                 className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                               >
                                 <span className="font-medium text-neutral-900 text-sm">{range.label}</span>

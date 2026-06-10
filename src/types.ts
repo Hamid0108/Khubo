@@ -12,6 +12,7 @@ export interface Listing {
   amenities: string[];
   lat?: number;
   lng?: number;
+  landlord_id?: string;
   reviews: {
     id: string;
     userName: string;
@@ -50,4 +51,5 @@ export interface Roommate {
   tags: string[];
   budgetRange: string;
   preferredPlace: string;
+  userId?: string;
 }

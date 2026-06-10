@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Upload, XCircle, Loader2 } from 'lucide-react';
-import { supabase } from '../mocks/supabase';
+import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/AuthContext';
 import { Listing } from '../types';
 
@@ -90,48 +90,37 @@ export function EditListingModal({ isOpen, onClose, onSuccess, listing }: EditLi
         throw new Error('Please have at least one image.');
       }
 
-      const newlyUploadedUrls: string[] = [];
-
-      // 1. Upload new images to Supabase Storage
-      for (const file of newImages) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('listing-images')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('listing-images')
-          .getPublicUrl(filePath);
-
-        newlyUploadedUrls.push(publicUrl);
-      }
-
-      const finalGallery = [...existingImages, ...newlyUploadedUrls];
-
-      // 2. Update Listing in Supabase Database
-      const updatedListing = {
-        title,
-        description,
-        price: parseFloat(price),
-        location,
-        category,
-        amenities: selectedAmenities,
-        image: finalGallery[0], // Main image
-        gallery: finalGallery,
+      // Convert new File objects to base64 Data URLs
+      const convertToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => {
+            resolve('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800');
+          };
+        });
       };
 
-      const { error: dbError } = await supabase
+      const newlyUploadedUrls = await Promise.all(newImages.map(convertToBase64));
+      const finalGallery = [...existingImages, ...newlyUploadedUrls];
+
+      const { error: sbErr } = await supabase
         .from('listings')
-        .update(updatedListing)
+        .update({
+          title,
+          description,
+          price: parseFloat(price),
+          location,
+          category,
+          amenities: selectedAmenities,
+          image: finalGallery[0] || listing.image,
+          gallery: finalGallery,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', listing.id);
 
-      if (dbError) throw dbError;
+      if (sbErr) throw sbErr;
 
       if (onSuccess) onSuccess();
       onClose();

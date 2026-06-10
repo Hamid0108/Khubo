@@ -28,6 +28,9 @@ import { format,
 } from 'date-fns';
 import { AuthModal } from '../components/AuthModal';
 import ListingDetailSkeleton from '../components/ListingDetailSkeleton';
+import BookingModal from '../components/BookingModal';
+import { useAuth } from '../lib/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 
 const Calendar = ({ 
   startDate, 
@@ -141,6 +144,7 @@ export default function ListingDetail() {
   const navigate = useNavigate();
   const { listing, loading } = useListing(id);
   const { showToast } = useToast();
+  const { user } = useAuth(); // Retrieve mock user from auth
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -150,8 +154,29 @@ export default function ListingDetail() {
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(() => {
+    try {
+      const saved = localStorage.getItem('khubo_saved_listings');
+      const ids = saved ? JSON.parse(saved) : [];
+      return id ? ids.includes(id) : false;
+    } catch {
+      return false;
+    }
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Simulated auth state
+
+  // Aligned States for Room Selection, Booking modal, and Information Tabs
+  const [selectedRoom, setSelectedRoom] = useState<'room1' | 'room2'>('room1');
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [activeInfoTab, setActiveInfoTab] = useState<'rules' | 'terms' | 'schedule'>('rules');
+
+  useEffect(() => {
+    if (user) {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -321,8 +346,22 @@ export default function ListingDetail() {
           <div className="hidden md:flex items-center shrink-0">
             <button 
               onClick={() => {
-                setIsSaved(!isSaved);
-                if (!isSaved) showToast('Listing saved to your wishlist!');
+                try {
+                  const saved = localStorage.getItem('khubo_saved_listings');
+                  let ids = saved ? JSON.parse(saved) : [];
+                  if (ids.includes(id)) {
+                    ids = ids.filter((x: string) => x !== id);
+                    setIsSaved(false);
+                    showToast('Removed from wishlist!');
+                  } else {
+                    ids.push(id);
+                    setIsSaved(true);
+                    showToast('Listing saved to your wishlist!');
+                  }
+                  localStorage.setItem('khubo_saved_listings', JSON.stringify(ids));
+                } catch (err) {
+                  console.error(err);
+                }
               }}
               className="flex items-center gap-2 hover:bg-neutral-100 px-4 py-2 rounded-xl transition-colors font-semibold underline decoration-transparent hover:decoration-neutral-900 underline-offset-4"
             >
@@ -341,6 +380,52 @@ export default function ListingDetail() {
             <div className="flex justify-between items-center pb-8 border-b border-gray-100">
               <div>
                 <h2 className="text-lg font-medium text-neutral-500 mb-0 px-0.5">Entire home in {listing.location}</h2>
+              </div>
+            </div>
+
+            {/* Available Rooms Section */}
+            <div className="py-8 border-b border-gray-100 text-left">
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-2">Available Rooms</h3>
+              <p className="text-neutral-500 text-xs mb-6 font-semibold uppercase tracking-wider">Select a layout to configure lease pricing</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button 
+                  onClick={() => setSelectedRoom('room1')}
+                  className={cn(
+                    "border-2 rounded-2xl p-5 flex flex-col gap-2 transition-all text-left cursor-pointer",
+                    selectedRoom === 'room1' 
+                      ? "border-[#17294F] bg-blue-50/10 shadow-md ring-2 ring-[#17294F]/10" 
+                      : "border-neutral-200 hover:border-neutral-300 bg-white"
+                  )}
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-extrabold text-neutral-950 text-sm">Room 1 (Single Bed)</span>
+                    <span className="bg-[#17294F] text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">Best Value</span>
+                  </div>
+                  <p className="text-xs text-neutral-500 font-semibold leading-relaxed mt-1">Single bed space. Includes shared study desk, locker, and shared bathroom access.</p>
+                  <div className="flex items-baseline gap-1 mt-3">
+                    <span className="text-lg font-black text-neutral-950">₱{listing.price.toLocaleString()}</span>
+                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">/month</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setSelectedRoom('room2')}
+                  className={cn(
+                    "border-2 rounded-2xl p-5 flex flex-col gap-2 transition-all text-left cursor-pointer",
+                    selectedRoom === 'room2' 
+                      ? "border-[#17294F] bg-blue-50/10 shadow-md ring-2 ring-[#17294F]/10" 
+                      : "border-neutral-200 hover:border-neutral-300 bg-white"
+                  )}
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-extrabold text-neutral-950 text-sm">Room 2 (Double Bed)</span>
+                    <span className="bg-amber-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">Spacious</span>
+                  </div>
+                  <p className="text-xs text-neutral-500 font-semibold leading-relaxed mt-1">Queen/Double bed space. Study desk, private wardrobe, and private balcony.</p>
+                  <div className="flex items-baseline gap-1 mt-3">
+                    <span className="text-lg font-black text-neutral-950">₱{Math.round(listing.price * 1.25).toLocaleString()}</span>
+                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">/month</span>
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -423,6 +508,60 @@ export default function ListingDetail() {
               </button>
             </div>
 
+            {/* Tabbed Property Information */}
+            <div className="py-10 border-b border-gray-100 text-left">
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Property Terms & Information</h3>
+              
+              {/* Tabs header */}
+              <div className="flex border-b border-neutral-200 mb-6 gap-6 text-[10px] font-black uppercase tracking-wider text-neutral-400 select-none overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'rules', label: 'Rules & Regulations' },
+                  { id: 'terms', label: 'Lease Terms (T&C)' },
+                  { id: 'schedule', label: 'Visitation Schedule' }
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveInfoTab(t.id as any)}
+                    className={cn(
+                      "pb-3 border-b-2 transition-all cursor-pointer whitespace-nowrap",
+                      activeInfoTab === t.id 
+                        ? "border-[#17294F] text-[#17294F] font-black" 
+                        : "border-transparent hover:text-neutral-700"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Contents */}
+              <div className="bg-neutral-50 border border-neutral-200 rounded-3xl p-6 leading-relaxed text-sm text-neutral-700 font-medium">
+                {activeInfoTab === 'rules' && (
+                  <ul className="list-disc list-inside space-y-2.5">
+                    <li><span className="font-bold text-neutral-900">Quiet Hours</span>: Quiet environment observed from 10:00 PM to 6:00 AM.</li>
+                    <li><span className="font-bold text-neutral-900">Guest Policy</span>: Day visitors allowed until 9:00 PM. Overnight guests require host notification.</li>
+                    <li><span className="font-bold text-neutral-900">Smoking & Alcohol</span>: Prohibited inside bedrooms or common lounges.</li>
+                    <li><span className="font-bold text-neutral-900">Pets</span>: Allowed only after review and subject to additional deposit.</li>
+                  </ul>
+                )}
+                {activeInfoTab === 'terms' && (
+                  <div className="space-y-3">
+                    <p><span className="font-bold text-neutral-900">Deposit Requirement</span>: 1-month security deposit is required, refundable upon lease termination.</p>
+                    <p><span className="font-bold text-neutral-900">Advance Rent</span>: 1-month advance rent to be settled before moving in.</p>
+                    <p><span className="font-bold text-neutral-900">Minimum Term</span>: Standard lease agreements span a minimum contract period of 6 months.</p>
+                    <p><span className="font-bold text-neutral-900">Utilities</span>: Wi-Fi and water are included. Power bills based on private submeter readings.</p>
+                  </div>
+                )}
+                {activeInfoTab === 'schedule' && (
+                  <div className="space-y-3">
+                    <p><span className="font-bold text-neutral-900">Visitation & Tours</span>: Tours scheduled Wednesdays and Saturdays from 1:00 PM to 5:00 PM.</p>
+                    <p><span className="font-bold text-neutral-900">Garbage Disposal</span>: Pickup schedule is scheduled every Tuesday and Friday at 7:30 AM.</p>
+                    <p><span className="font-bold text-neutral-900">Maintenance</span>: General corridor cleaning is scheduled alternate Sunday mornings.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="py-10">
                <div className="flex items-center gap-3 mb-8">
                   <Star size={24} className="fill-amber-400 text-amber-400" />
@@ -484,11 +623,128 @@ export default function ListingDetail() {
               work={displayHost.work}
               location={displayHost.location}
               tenantCount={displayHost.tenantCount || defaultHost.tenantCount}
-              onMessageClick={() => {
+              onMessageClick={async () => {
                 if (!isAuthenticated) {
                   setIsAuthModalOpen(true);
                 } else {
-                  showToast('Message sent to host successfully!');
+                  const moveInText = startDate ? ` starting on ${format(startDate, 'MMMM d, yyyy')}` : '';
+                  const roomText = selectedRoom === 'room1' ? 'Room 1 (Single Bed)' : 'Room 2 (Double Bed)';
+                  const prefilledText = `Hi ${displayHost.name}! I am interested in inquiring about "${listing.title}" (${roomText})${moveInText}. Is it available for visitation?`;
+                  
+                  const landlordId = listing.landlord_id;
+                  const isUUID = landlordId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(landlordId);
+
+                  if (user && isUUID) {
+                    showToast('Initiating conversation with host...');
+                    let targetId: string | null = null;
+                    try {
+                      const { data: existingConvs } = await supabase
+                        .from('conversations')
+                        .select('*')
+                        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+
+                      const existing = existingConvs?.find(
+                        c => (c.sender_id === user.id && c.receiver_id === landlordId) ||
+                             (c.sender_id === landlordId && c.receiver_id === user.id)
+                      );
+
+                      if (existing) {
+                        targetId = existing.id;
+                        await supabase.from('messages').insert({
+                          conversation_id: existing.id,
+                          sender_id: user.id,
+                          text: prefilledText
+                        });
+                        await supabase
+                          .from('conversations')
+                          .update({
+                            last_message: prefilledText,
+                            last_message_time: new Date().toISOString()
+                          })
+                          .eq('id', existing.id);
+                      } else {
+                        // Fetch landlord profile
+                        const { data: landlordProfile } = await supabase
+                          .from('profiles')
+                          .select('full_name, nickname')
+                          .eq('id', landlordId)
+                          .single();
+                        
+                        const receiverName = landlordProfile?.full_name || landlordProfile?.nickname || displayHost.name || 'Landlord';
+
+                        // Fetch user profile
+                        const { data: myProfile } = await supabase
+                          .from('profiles')
+                          .select('full_name, nickname')
+                          .eq('id', user.id)
+                          .single();
+
+                        const senderName = myProfile?.full_name || myProfile?.nickname || user.email?.split('@')[0] || 'User';
+
+                        const { data: newConv } = await supabase
+                          .from('conversations')
+                          .insert({
+                            sender_id: user.id,
+                            receiver_id: landlordId,
+                            sender_name: senderName,
+                            receiver_name: receiverName,
+                            last_message: prefilledText,
+                            last_message_time: new Date().toISOString()
+                          })
+                          .select()
+                          .single();
+
+                        if (newConv) {
+                          targetId = newConv.id;
+                          await supabase.from('messages').insert({
+                            conversation_id: newConv.id,
+                            sender_id: user.id,
+                            text: prefilledText
+                          });
+                        }
+                      }
+                    } catch (err) {
+                      console.error('Supabase chat initiation error:', err);
+                    } finally {
+                      if (targetId) {
+                        navigate(`/messages?id=${targetId}`);
+                      } else {
+                        navigate('/messages');
+                      }
+                    }
+                  } else {
+                    const hostId = `host_${listing.id}`;
+                    const newChat = {
+                      id: hostId,
+                      name: displayHost.name,
+                      avatar: displayHost.image,
+                      lastMessage: prefilledText,
+                      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      unread: 0,
+                      online: true,
+                      role: 'Landlord'
+                    };
+                    
+                    const chatsStr = localStorage.getItem('khubo_conversations');
+                    const chats = chatsStr ? JSON.parse(chatsStr) : [];
+                    
+                    if (!chats.some((c: any) => c.id === hostId)) {
+                      localStorage.setItem('khubo_conversations', JSON.stringify([newChat, ...chats]));
+                    }
+                    
+                    const newMsg = {
+                      id: Date.now().toString(),
+                      text: prefilledText,
+                      sender: 'me',
+                      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    localStorage.setItem(`khubo_messages_${hostId}`, JSON.stringify([newMsg]));
+                    
+                    showToast('Initiating conversation with host...');
+                    setTimeout(() => {
+                      navigate(`/messages?id=${hostId}`);
+                    }, 1000);
+                  }
                 }
               }}
             />
@@ -511,7 +767,7 @@ export default function ListingDetail() {
             <div className="sticky top-[100px] border border-gray-200 rounded-[2.5rem] py-8 px-8 shadow-2xl flex flex-col gap-5 bg-white max-h-[calc(100vh-120px)] overflow-hidden">
               <div className="flex justify-between items-center bg-neutral-50 px-5 py-3 rounded-[2rem] border border-neutral-100 flex-shrink-0">
                 <div className="flex items-baseline gap-1">
-                   <span className="text-xl font-black text-[#17294F]">P{listing.price}</span>
+                   <span className="text-xl font-black text-[#17294F]">₱{(selectedRoom === 'room1' ? listing.price : Math.round(listing.price * 1.25)).toLocaleString()}</span>
                    <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-tight">/month</span>
                 </div>
                 <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-800">
@@ -579,37 +835,37 @@ export default function ListingDetail() {
                       return;
                     }
                     if (startDate) {
-                      // Reserve logic
+                      setIsBookingModalOpen(true);
                     } else {
                       setIsModalOpen(true);
                     }
                   }}
-                  className="w-full py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all active:scale-95 shadow-lg bg-[#17294F] text-white hover:shadow-xl hover:bg-[#1e3466]"
+                  className="w-full py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all active:scale-95 shadow-lg bg-[#17294F] text-white hover:shadow-xl hover:bg-[#1e3466] cursor-pointer animate-none"
                 >
                   {startDate ? 'Reserve Now' : 'Check Availability'}
                 </button>
 
                 <div className="text-center text-[9px] font-bold text-neutral-400 uppercase tracking-tight">
-                  No charges yet
+                  No holding charges yet
                 </div>
 
                 {startDate && (
                   <div className="flex flex-col gap-2 pt-4 border-t border-neutral-100">
                      <div className="flex justify-between items-center text-neutral-600">
                         <span className="text-[10px] font-bold uppercase tracking-tight">Monthly Rent</span>
-                        <span className="font-black text-neutral-900 text-[10px]">P{listing.price}</span>
+                        <span className="font-black text-neutral-950 text-[10px]">₱{(selectedRoom === 'room1' ? listing.price : Math.round(listing.price * 1.25)).toLocaleString()}</span>
                      </div>
                      <div className="flex justify-between items-center text-neutral-600">
                         <span className="text-[10px] font-bold uppercase tracking-tight">Cleaning fee</span>
-                        <span className="font-black text-neutral-900 text-[10px]">P150</span>
+                        <span className="font-black text-neutral-950 text-[10px]">₱150</span>
                      </div>
                      <div className="flex justify-between items-center text-neutral-600">
                         <span className="text-[10px] font-bold uppercase tracking-tight">Service fee</span>
-                        <span className="font-black text-neutral-900 text-[10px]">P100</span>
+                        <span className="font-black text-neutral-950 text-[10px]">₱100</span>
                      </div>
                      <div className="pt-3 mt-1 border-t border-neutral-200 flex justify-between items-center text-[#17294F]">
                         <span className="text-[10px] font-black uppercase tracking-widest">Grand Total</span>
-                        <span className="text-xl font-black">P{listing.price + 150 + 100}</span>
+                        <span className="text-xl font-black">₱{((selectedRoom === 'room1' ? listing.price : Math.round(listing.price * 1.25)) + 150 + 100).toLocaleString()}</span>
                      </div>
                   </div>
                 )}
@@ -636,12 +892,12 @@ export default function ListingDetail() {
                 return;
               }
               if (startDate) {
-                // Reserve logic
+                setIsBookingModalOpen(true);
               } else {
                 setIsModalOpen(true);
               }
             }}
-            className="flex-1 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest bg-[#17294F] text-white shadow-lg shadow-blue-900/10 transition-all active:scale-95"
+            className="flex-1 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest bg-[#17294F] text-white shadow-lg shadow-blue-900/10 transition-all active:scale-95 cursor-pointer"
           >
             {startDate ? 'Reserve Now' : 'Check Availability'}
           </button>
@@ -659,7 +915,19 @@ export default function ListingDetail() {
       <AuthModal 
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLogin={() => setIsAuthenticated(true)}
+        onLogin={() => {
+          setIsAuthenticated(true);
+        }}
+      />
+
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        listing={listing}
+        selectedRoom={selectedRoom}
+        roomPrice={selectedRoom === 'room1' ? listing.price : Math.round(listing.price * 1.25)}
+        startDate={startDate}
+        onSelectDate={handleDateSelect}
       />
 
       <Footer />

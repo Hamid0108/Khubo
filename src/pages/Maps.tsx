@@ -12,6 +12,68 @@ import { motion, AnimatePresence } from 'motion/react';
 import { DateScrollPicker } from '../components/DateScrollPicker';
 import SearchDropdown from '../components/SearchDropdown';
 
+function parseSearchQuery(query: string) {
+  let tempQuery = query.toLowerCase();
+  let parsedLocation = '';
+  let parsedDates = '';
+  let parsedBudget = '';
+
+  // 1. Parse Location
+  if (tempQuery.includes('cagayan')) {
+    parsedLocation = 'Cagayan de Oro';
+    tempQuery = tempQuery.replace(/cagayan(\s+de\s+oro)?/gi, '');
+  } else if (tempQuery.includes('iligan')) {
+    parsedLocation = 'Iligan City';
+    tempQuery = tempQuery.replace(/iligan(\s+city)?/gi, '');
+  } else if (tempQuery.includes('butuan')) {
+    parsedLocation = 'Butuan City';
+    tempQuery = tempQuery.replace(/butuan(\s+city)?/gi, '');
+  }
+
+  // 2. Parse Dates (Months)
+  const months = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
+  ];
+  for (const month of months) {
+    if (tempQuery.includes(month)) {
+      parsedDates = month.charAt(0).toUpperCase() + month.slice(1);
+      tempQuery = tempQuery.replace(new RegExp(month, 'gi'), '');
+      break;
+    }
+  }
+
+  // 3. Parse Budget
+  const budget1k3kRegex = /(1k\s*-\s*3k|1000\s*-\s*3000|1500)/i;
+  const budget3k5kRegex = /(3k\s*-\s*5k|3000\s*-\s*5000|4000)/i;
+  const budget5kPlusRegex = /(5k\+|5000\+|6000|5k)/i;
+
+  if (budget1k3kRegex.test(tempQuery)) {
+    parsedBudget = '₱1k - ₱3k';
+    tempQuery = tempQuery.replace(budget1k3kRegex, '');
+  } else if (budget3k5kRegex.test(tempQuery)) {
+    parsedBudget = '₱3k - ₱5k';
+    tempQuery = tempQuery.replace(budget3k5kRegex, '');
+  } else if (budget5kPlusRegex.test(tempQuery)) {
+    parsedBudget = '₱5k+';
+    tempQuery = tempQuery.replace(budget5kPlusRegex, '');
+  }
+
+  // Clean up punctuation and stop words
+  const cleanQuery = tempQuery
+    .replace(/\b(in|at|for|with|budget|price|of|around|under|above|below)\b/gi, '')
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return {
+    location: parsedLocation,
+    dates: parsedDates,
+    budget: parsedBudget,
+    cleanQuery
+  };
+}
+
 export default function Maps() {
   const { listings: LISTINGS, loading } = useListings();
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +86,36 @@ export default function Maps() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
   const markers = useRef<{ [key: string]: maptilersdk.Marker }>({});
+
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedDates, setSelectedDates] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState('');
+
+  useEffect(() => {
+    if (!searchQuery) return;
+
+    const parsed = parseSearchQuery(searchQuery);
+    let updated = false;
+
+    if (parsed.location && parsed.location !== selectedLocation) {
+      setSelectedLocation(parsed.location);
+      updated = true;
+    }
+    if (parsed.dates && parsed.dates !== selectedDates) {
+      setSelectedDates(parsed.dates);
+      updated = true;
+    }
+    if (parsed.budget && parsed.budget !== selectedBudget) {
+      setSelectedBudget(parsed.budget);
+      updated = true;
+    }
+
+    if (parsed.location || parsed.dates || parsed.budget) {
+      if (searchQuery !== parsed.cleanQuery) {
+        setSearchQuery(parsed.cleanQuery);
+      }
+    }
+  }, [searchQuery, selectedLocation, selectedDates, selectedBudget]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -51,11 +143,40 @@ export default function Maps() {
 
   const filteredListings = useMemo(() => {
     const dataListings = LISTINGS || [];
-    return dataListings.filter(listing => 
-      listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.location.toLowerCase().includes(searchQuery.toLowerCase())
-    ).filter(l => l.lat && l.lng); // Only show listings with coordinates
-  }, [searchQuery, LISTINGS]);
+    let result = [...dataListings];
+
+    // Filter by Location
+    if (selectedLocation) {
+      result = result.filter(listing => 
+        listing.location.toLowerCase().includes(selectedLocation.toLowerCase())
+      );
+    }
+
+    // Filter by Budget Range
+    if (selectedBudget) {
+      if (selectedBudget === '₱1k - ₱3k') {
+        result = result.filter(listing => listing.price >= 1000 && listing.price <= 3000);
+      } else if (selectedBudget === '₱3k - ₱5k') {
+        result = result.filter(listing => listing.price >= 3000 && listing.price <= 5000);
+      } else if (selectedBudget === '₱5k+') {
+        result = result.filter(listing => listing.price >= 5000);
+      }
+    }
+
+    // Filter by Search Query
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(listing => 
+        listing.title.toLowerCase().includes(query) ||
+        listing.location.toLowerCase().includes(query) ||
+        listing.description.toLowerCase().includes(query) ||
+        listing.category.toLowerCase().includes(query) ||
+        listing.price.toString().includes(query)
+      );
+    }
+
+    return result.filter(l => l.lat && l.lng); // Only show listings with coordinates
+  }, [searchQuery, LISTINGS, selectedLocation, selectedBudget]);
 
   const updateMarkers = React.useCallback(() => {
     if (!map.current) return;
@@ -215,6 +336,11 @@ export default function Maps() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setIsSearchActive(false);
+                      }
+                    }}
                     placeholder="Search rooms, location..."
                     className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-neutral-800 placeholder:text-neutral-400 focus:ring-0 p-0"
                     autoFocus
@@ -260,7 +386,21 @@ export default function Maps() {
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
                       <MapPin className="w-3.5 h-3.5 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
-                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">Location</span>
+                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">
+                        {selectedLocation || 'Location'}
+                      </span>
+                      {selectedLocation && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLocation('');
+                            setSearchQuery('');
+                          }}
+                          className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
                     </div>
                     <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 opacity-40 group-hover:opacity-100 flex-shrink-0 ml-0.5 md:ml-1 transition-all ${activeDropdown === 'location' ? 'rotate-180 opacity-100' : ''}`} />
                   </div>
@@ -281,6 +421,8 @@ export default function Maps() {
                                 <input 
                                   type="text"
                                   placeholder="Search location..."
+                                  value={searchQuery}
+                                  onChange={(e) => setSearchQuery(e.target.value)}
                                   className="w-full bg-transparent border-none outline-none text-sm font-medium text-neutral-900 placeholder:text-neutral-400 p-0 focus:ring-0"
                                 />
                               </div>
@@ -288,7 +430,11 @@ export default function Maps() {
                               {['Iligan City', 'Cagayan de Oro', 'Butuan City'].map((loc) => (
                                 <button 
                                   key={loc}
-                                  onClick={() => setActiveDropdown(null)}
+                                  onClick={() => {
+                                    setSelectedLocation(loc);
+                                    setSearchQuery(loc);
+                                    setActiveDropdown(null);
+                                  }}
                                   className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors group/item"
                                 >
                                   <div className="w-8 h-8 rounded-lg bg-[#2252D6]/10 flex items-center justify-center text-[#2252D6] group-hover/item:bg-[#2252D6] group-hover/item:text-white transition-all">
@@ -320,7 +466,21 @@ export default function Maps() {
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
                       <CalendarIcon className="w-3.5 h-3.5 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
-                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">Dates</span>
+                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">
+                        {selectedDates || 'Dates'}
+                      </span>
+                      {selectedDates && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDates('');
+                            setSearchQuery('');
+                          }}
+                          className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
                     </div>
                     <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 opacity-40 group-hover:opacity-100 flex-shrink-0 ml-0.5 md:ml-1 transition-all ${activeDropdown === 'dates' ? 'rotate-180 opacity-100' : ''}`} />
                   </div>
@@ -334,7 +494,14 @@ export default function Maps() {
                         transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
                         className="absolute top-[100%] mt-2 left-0 w-full bg-white rounded-2xl md:rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] md:shadow-xl border border-neutral-100 overflow-hidden z-50 text-left"
                       >
-                        <DateScrollPicker viewportHeight={132} />
+                        <DateScrollPicker 
+                          viewportHeight={132} 
+                          onMonthClick={(m) => {
+                            setSelectedDates(m);
+                            setSearchQuery(prev => prev ? `${prev} in ${m}` : m);
+                            setActiveDropdown(null);
+                          }}
+                        />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -355,7 +522,21 @@ export default function Maps() {
                   >
                     <div className="flex items-center gap-1 md:gap-3 min-w-0">
                       <Wallet className="w-3.5 h-3.5 md:w-5 md:h-5 text-[#2252D6] flex-shrink-0" />
-                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">Budget</span>
+                      <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate">
+                        {selectedBudget || 'Budget'}
+                      </span>
+                      {selectedBudget && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBudget('');
+                            setSearchQuery('');
+                          }}
+                          className="p-0.5 hover:bg-neutral-200 rounded-full text-neutral-500 ml-1 flex-shrink-0 z-[70] cursor-pointer pointer-events-auto"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
                     </div>
                     <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 opacity-40 group-hover:opacity-100 flex-shrink-0 ml-0.5 md:ml-1 transition-all ${activeDropdown === 'budget' ? 'rotate-180 opacity-100' : ''}`} />
                   </div>
@@ -378,7 +559,11 @@ export default function Maps() {
                             ].map((range) => (
                               <button 
                                 key={range.label}
-                                onClick={() => setActiveDropdown(null)}
+                                onClick={() => {
+                                  setSelectedBudget(range.label);
+                                  setSearchQuery(range.label);
+                                  setActiveDropdown(null);
+                                }}
                                 className="flex flex-col px-3 py-2.5 rounded-lg bg-transparent hover:bg-neutral-100 transition-all text-left w-full"
                               >
                                 <span className="font-bold text-neutral-900 text-sm">{range.label}</span>
@@ -437,6 +622,7 @@ export default function Maps() {
                     key={listing.id} 
                     id={`listing-${listing.id}`}
                     className={`transition-all duration-300 rounded-xl cursor-pointer ${selectedListing === listing.id ? 'ring-2 ring-[#17294F] ring-offset-2' : ''}`}
+                    // eslint-disable-next-line react-hooks/refs
                     onClick={() => handleListingClick(listing)}
                   >
                     <ListingCard 

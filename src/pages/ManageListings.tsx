@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { supabase } from '../mocks/supabase';
+import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/AuthContext';
 import { Star, MapPin, Edit, Users, Loader2 } from 'lucide-react';
 import { EditListingModal } from '../components/EditListingModal';
