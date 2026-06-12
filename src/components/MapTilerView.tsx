@@ -12,8 +12,19 @@ interface MapTilerViewProps {
 const MapTilerView: React.FC<MapTilerViewProps> = ({ lat, lng, title }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
+  const marker = useRef<maptilersdk.Marker | null>(null);
 
   const apiKey = import.meta.env.VITE_MAPTILER_API_KEY || 'JNCQIsX7HW4jPDQX491R';
+
+  // Coordinate sync effect
+  useEffect(() => {
+    if (map.current) {
+      map.current.setCenter([lng, lat]);
+      if (marker.current) {
+        marker.current.setLngLat([lng, lat]);
+      }
+    }
+  }, [lat, lng]);
 
   useEffect(() => {
     if (map.current) return; // stops map from initializing more than once
@@ -67,9 +78,11 @@ const MapTilerView: React.FC<MapTilerViewProps> = ({ lat, lng, title }) => {
         </div>
       `;
 
-      new maptilersdk.Marker({ element: el })
+      const newMarker = new maptilersdk.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.current);
+      
+      marker.current = newMarker;
     } catch (error) {
       console.error('Error initializing MapTiler map:', error);
     }

@@ -489,8 +489,8 @@ export default function Profile() {
         .from('conversations')
         .select(`
           *,
-          sender:sender_id(role, avatar_url),
-          receiver:receiver_id(role, avatar_url)
+          sender:sender_id(role, avatar_url, nickname, full_name),
+          receiver:receiver_id(role, avatar_url, nickname, full_name)
         `)
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
@@ -502,7 +502,8 @@ export default function Profile() {
         const roommateConvs = (convs || []).map((c: any) => {
           const isReceiver = c.receiver_id === user?.id;
           const otherProfile = isReceiver ? c.sender : c.receiver;
-          const otherName = isReceiver ? c.sender_name : c.receiver_name;
+          const fallbackName = isReceiver ? c.sender_name : c.receiver_name;
+          const otherName = otherProfile?.nickname || otherProfile?.full_name || fallbackName;
           const otherRole = otherProfile?.role 
             ? (otherProfile.role === 'landlord' ? 'Landlord' : 'Roommate') 
             : (otherName?.toLowerCase().includes('landlord') ? 'Landlord' : 'Roommate');
@@ -554,24 +555,33 @@ export default function Profile() {
     }
   }, [user, selectedStatModal, fetchProfileStatsData]);
 
-  const handleCancelReservation = async (id: string) => {
-    const confirmCancel = window.confirm("Are you sure you want to cancel this reservation? The ₱1,000 holding deposit will be refunded to your source payment account.");
-    if (confirmCancel) {
-      try {
-        const { error } = await supabase
-          .from('reservations')
-          .update({ status: 'cancelled' })
-          .eq('id', id);
-        
-        if (error) {
-          showToast("Failed to cancel reservation.");
-        } else {
-          showToast("Reservation cancelled successfully. Refund initiated.");
-          fetchReservations();
-        }
-      } catch (err) {
-        console.error(err);
+  const [cancellingRes, setCancellingRes] = useState<{ id: string; isApproved: boolean } | null>(null);
+
+  const handleCancelReservation = (id: string, isApproved: boolean = false) => {
+    setCancellingRes({ id, isApproved });
+  };
+
+  const executeCancelReservation = async () => {
+    if (!cancellingRes) return;
+    const { id, isApproved } = cancellingRes;
+    const term = isApproved ? 'booking' : 'reservation';
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
+      
+      if (error) {
+        showToast(`Failed to cancel ${term}.`);
+      } else {
+        showToast(`${term.charAt(0).toUpperCase() + term.slice(1)} cancelled successfully. Refund initiated.`);
+        fetchReservations();
       }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error: ${err.message || err}`);
+    } finally {
+      setCancellingRes(null);
     }
   };
 
@@ -617,7 +627,7 @@ export default function Profile() {
             .eq('id', landlordId)
             .single();
           
-          const receiverName = landlordProfile?.full_name || landlordProfile?.nickname || 'Landlord';
+          const receiverName = landlordProfile?.nickname || landlordProfile?.full_name || 'Landlord';
 
           const { data: myProfile } = await supabase
             .from('profiles')
@@ -625,7 +635,7 @@ export default function Profile() {
             .eq('id', user.id)
             .single();
 
-          const senderName = myProfile?.full_name || myProfile?.nickname || user.email?.split('@')[0] || 'User';
+          const senderName = myProfile?.nickname || myProfile?.full_name || user.email?.split('@')[0] || 'User';
 
           const { data: newConv } = await supabase
             .from('conversations')
@@ -1587,10 +1597,10 @@ export default function Profile() {
                       {(res.status === 'Active' || res.status === 'Approved') ? (
                         <>
                           <button 
-                            onClick={() => handleCancelReservation(res.id)}
+                            onClick={() => handleCancelReservation(res.id, res.status === 'Approved')}
                             className="flex-1 md:flex-none px-6 py-3 border-[1.5px] border-red-200 text-red-500 rounded-full font-bold hover:bg-red-50 transition active:scale-95 text-xs md:text-sm whitespace-nowrap cursor-pointer"
                           >
-                            Cancel Reservation
+                            {res.status === 'Approved' ? 'Cancel Booking' : 'Cancel Reservation'}
                           </button>
                           <button 
                             onClick={() => handleContactLandlord(res.landlordId, res.listingTitle)}
@@ -2186,6 +2196,61 @@ export default function Profile() {
                     Cancelled by Tenant
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel Reservation/Booking Confirmation Modal */}
+      <AnimatePresence>
+        {cancellingRes && (
+          <div className="fixed inset-0 z-[700] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setCancellingRes(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-[2rem] shadow-2xl border border-neutral-100 overflow-hidden flex flex-col p-6 z-10 text-neutral-900 text-left"
+            >
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4 text-red-500">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                  <X className="w-5 h-5" strokeWidth={3} />
+                </div>
+                <h3 className="font-display font-extrabold text-[#17294F] text-lg">
+                  Cancel {cancellingRes.isApproved ? 'Booking' : 'Reservation'}
+                </h3>
+              </div>
+
+              {/* Body */}
+              <p className="text-sm text-neutral-600 leading-relaxed mb-6">
+                Are you sure you want to cancel this {cancellingRes.isApproved ? 'booking' : 'reservation'}? The ₱1,000 holding deposit will be refunded to your source payment account.
+              </p>
+
+              {/* Actions */}
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setCancellingRes(null)}
+                  className="px-5 py-2.5 rounded-xl border border-neutral-300 text-neutral-700 font-bold hover:bg-neutral-50 transition active:scale-95 text-xs md:text-sm cursor-pointer"
+                >
+                  No, Keep It
+                </button>
+                <button
+                  onClick={executeCancelReservation}
+                  className="px-5 py-2.5 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-md shadow-red-500/10 transition active:scale-95 text-xs md:text-sm cursor-pointer"
+                >
+                  Yes, Cancel
+                </button>
               </div>
             </motion.div>
           </div>

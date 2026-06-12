@@ -144,3 +144,12 @@ CREATE TRIGGER on_message_created
 
 -- 6. Add status to conversations table if it does not exist
 ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+
+-- 7. Drop the FYP videos table completely
+DROP TABLE IF EXISTS public.fyp_videos CASCADE;
+
+-- 8. Add barangay and city columns to listings table if they do not exist
+ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS barangay TEXT;
+ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS city TEXT;
+
+

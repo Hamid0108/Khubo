@@ -12,6 +12,8 @@ export interface Listing {
   amenities: string[];
   lat?: number;
   lng?: number;
+  city?: string;
+  barangay?: string;
   landlord_id?: string;
   reviews: {
     id: string;

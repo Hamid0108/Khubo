@@ -14,7 +14,6 @@ const Maps = lazy(() => import('./pages/Maps'));
 const RoommateFinder = lazy(() => import('./pages/RoommateFinder'));
 const Profile = lazy(() => import('./pages/Profile'));
 const ManageListings = lazy(() => import('./pages/ManageListings'));
-const FYP = lazy(() => import('./pages/FYP'));
 const ProfileSetup = lazy(() => import('./pages/ProfileSetup'));
 
 // A simple loading fallback for Suspense
@@ -40,7 +39,6 @@ export default function App() {
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/roommate" element={<RoommateFinder />} />
                   <Route path="/roommate-finder" element={<RoommateFinder />} />
-                  <Route path="/fyp" element={<FYP />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/manage-listings" element={<ManageListings />} />
                   <Route path="/profile-setup" element={<ProfileSetup />} />

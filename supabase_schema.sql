@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS public.listings (
     amenities TEXT[],
     lat NUMERIC,
     lng NUMERIC,
+    barangay TEXT,
+    city TEXT,
     reviews JSONB DEFAULT '[]'::jsonb,
     host JSONB DEFAULT '{}'::jsonb,
     landlord_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
@@ -118,21 +120,7 @@ CREATE TABLE IF NOT EXISTS public.messages (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- FYP Videos Table (Vertical video reels)
-CREATE TABLE IF NOT EXISTS public.fyp_videos (
-    id TEXT PRIMARY KEY, -- 'v1', 'v2', etc.
-    video_url TEXT NOT NULL,
-    username TEXT,
-    avatar TEXT,
-    description TEXT,
-    likes INT DEFAULT 0,
-    comments_count INT DEFAULT 0,
-    shares INT DEFAULT 0,
-    saves INT DEFAULT 0,
-    listing_id TEXT REFERENCES public.listings(id) ON DELETE SET NULL,
-    comments JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+
 
 -- =========================================================================
 -- 3. ENABLE ROW LEVEL SECURITY (RLS)
@@ -143,7 +131,7 @@ ALTER TABLE public.roommates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.fyp_videos ENABLE ROW LEVEL SECURITY;
+
 
 -- =========================================================================
 -- 4. RLS POLICIES (Access Controls)
@@ -192,9 +180,7 @@ CREATE POLICY "Anyone can view messages" ON public.messages
 CREATE POLICY "Anyone can insert messages" ON public.messages 
     FOR INSERT WITH CHECK (true);
 
--- FYP Videos: viewable by anyone
-CREATE POLICY "Videos are viewable by everyone" ON public.fyp_videos 
-    FOR SELECT USING (true);
+
 
 -- =========================================================================
 -- 5. AUTOMATIC PROFILE SYNC TRIGGER (On Auth Signup)
@@ -224,12 +210,12 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 -- =========================================================================
 
 -- Clear existing listings/roommates if any to avoid PK duplicate constraint errors on repeat runs
-TRUNCATE TABLE public.fyp_videos CASCADE;
+
 TRUNCATE TABLE public.roommates CASCADE;
 TRUNCATE TABLE public.listings CASCADE;
 
 -- Insert Mock Listings
-INSERT INTO public.listings (id, title, location, description, price, rating, image, gallery, category, date, amenities, lat, lng, reviews, host)
+INSERT INTO public.listings (id, title, location, description, price, rating, image, gallery, category, date, amenities, lat, lng, barangay, city, reviews, host)
 VALUES 
 (
   'k1',
@@ -248,6 +234,8 @@ VALUES
   ARRAY['Free Wifi', 'Electricity', 'Water'],
   8.2415,
   124.2442,
+  'Tibanga',
+  'Iligan City',
   '[
     {"id": "r1", "userName": "John Doe", "userImage": "https://i.pravatar.cc/150?u=r1", "rating": 5, "date": "May 2024", "comment": "Great place to stay! Very clean and quiet."},
     {"id": "r2", "userName": "Jane Smith", "userImage": "https://i.pravatar.cc/150?u=r2", "rating": 5, "date": "April 2024", "comment": "Best dorm near MSU-IIT. The WiFi is fast."},
@@ -274,6 +262,8 @@ VALUES
   ARRAY['Free Wifi', 'CCTV', 'Water'],
   8.2385,
   124.2382,
+  'Pala-o',
+  'Iligan City',
   '[
     {"id": "r6", "userName": "Peter Parker", "userImage": "https://i.pravatar.cc/150?u=r6", "rating": 5, "date": "May 2024", "comment": "The solo rooms are very comfortable."},
     {"id": "r7", "userName": "Mary Jane", "userImage": "https://i.pravatar.cc/150?u=r7", "rating": 5, "date": "April 2024", "comment": "Great security. I felt very safe here."},
@@ -297,6 +287,8 @@ VALUES
   ARRAY['Free Wifi', 'Water', 'Electricity'],
   8.2445,
   124.2452,
+  'Tibanga',
+  'Iligan City',
   '[
     {"id": "r11", "userName": "Diana Prince", "userImage": "https://i.pravatar.cc/150?u=r11", "rating": 5, "date": "May 2024", "comment": "Safest place for girls. Highly recommend!"},
     {"id": "r12", "userName": "Natasha Romanoff", "userImage": "https://i.pravatar.cc/150?u=r12", "rating": 5, "date": "April 2024", "comment": "Very clean and quiet. Perfect for studying."},
@@ -320,6 +312,8 @@ VALUES
   ARRAY['Free Wifi', 'Drinking Water'],
   8.2325,
   124.2482,
+  'Tambacan',
+  'Iligan City',
   '[
     {"id": "r16", "userName": "Bruce Wayne", "userImage": "https://i.pravatar.cc/150?u=r16", "rating": 5, "date": "May 2024", "comment": "I like the quietness here."},
     {"id": "r17", "userName": "Clark Kent", "userImage": "https://i.pravatar.cc/150?u=r17", "rating": 5, "date": "April 2024", "comment": "Very clean environment."},
@@ -343,6 +337,8 @@ VALUES
   ARRAY['Aircon', 'Free Wifi', 'Heated Shower'],
   8.2255,
   124.2412,
+  'Poblacion',
+  'Iligan City',
   '[]'::jsonb,
   '{}'::jsonb
 ),
@@ -360,6 +356,8 @@ VALUES
   ARRAY['Free Wifi', 'Study Area'],
   8.2410,
   124.2435,
+  'Trece',
+  'Iligan City',
   '[]'::jsonb,
   '{}'::jsonb
 ),
@@ -377,6 +375,8 @@ VALUES
   ARRAY['Free Wifi', 'Elevator', 'Gym'],
   8.2430,
   124.2465,
+  'Tibanga',
+  'Iligan City',
   '[]'::jsonb,
   '{}'::jsonb
 ),
@@ -394,6 +394,8 @@ VALUES
   ARRAY['Electricity', 'Kitchen Access'],
   8.2350,
   124.2320,
+  'San Miguel',
+  'Iligan City',
   '[]'::jsonb,
   '{}'::jsonb
 ),
@@ -411,6 +413,8 @@ VALUES
   ARRAY['Free Wifi', 'Water'],
   8.2360,
   124.2395,
+  'Pala-o',
+  'Iligan City',
   '[]'::jsonb,
   '{}'::jsonb
 ),
@@ -428,6 +432,8 @@ VALUES
   ARRAY['Water'],
   8.2215,
   124.2312,
+  'Ubaldo Laya',
+  'Iligan City',
   '[]'::jsonb,
   '{}'::jsonb
 );
@@ -514,58 +520,7 @@ VALUES
   ARRAY['Night owl', 'Quiet', 'Studious']
 );
 
--- Insert FYP Video Reels Mock Data
-INSERT INTO public.fyp_videos (id, video_url, username, avatar, description, likes, comments_count, shares, saves, listing_id, comments)
-VALUES
-(
-  'v1',
-  'https://assets.mixkit.co/videos/preview/mixkit-interior-of-a-modern-apartment-40455-large.mp4',
-  'kayla_residences',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-  'Tour of our Premium Solo Room! ✨ Private bath, high speed Wi-Fi, and 24/7 security. Perfect for MSU-IIT students. Dm for inquiries! #dormlife #college #roomtour',
-  1240,
-  3,
-  89,
-  342,
-  'k2',
-  '[
-    {"id": "c1", "username": "andrea_c", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Andrea67", "text": "Is this room still available for next semester?", "time": "2h ago"},
-    {"id": "c2", "username": "irvin_l", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Irvin99", "text": "Highly recommend this place, super quiet and safe!", "time": "5h ago"},
-    {"id": "c3", "username": "student_iit", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=student", "text": "How far is this from the main gate?", "time": "1d ago"}
-  ]'::jsonb
-),
-(
-  'v2',
-  'https://assets.mixkit.co/videos/preview/mixkit-modern-loft-apartment-interior-41551-large.mp4',
-  'executive_suites',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-  'Looking for luxury on a budget? Check out the Executive Solo Suite. Fully airconditioned, private balcony, heated shower. 💎 #aesthetic #roomdecor #apartmentliving',
-  852,
-  2,
-  42,
-  198,
-  'k5',
-  '[
-    {"id": "c4", "username": "rich_kid", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=rich", "text": "Perfect room layout!", "time": "1h ago"},
-    {"id": "c5", "username": "mark_s", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=MarkSantos", "text": "Does the price include water and electricity?", "time": "3h ago"}
-  ]'::jsonb
-),
-(
-  'v3',
-  'https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-christmas-tree-41716-large.mp4',
-  'yhuzuong_dorms',
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150',
-  'Shared room layout tour! 🛌 Walking distance to MSU-IIT. Free drinking water and fast study area wifi. Find a roommate and apply! #collegelife #roommatefinder #dormitory',
-  934,
-  2,
-  61,
-  215,
-  'k1',
-  '[
-    {"id": "c6", "username": "sophia_r", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=SophiaReyes", "text": "Looking for a roommate here! CS major pref.", "time": "12m ago"},
-    {"id": "c7", "username": "elena_g", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=ElenaGomez", "text": "Super friendly landlord as well.", "time": "4h ago"}
-  ]'::jsonb
-);
+
 
 -- Enable Supabase Realtime for messages and conversations tables
 DO $$

@@ -1,6 +1,7 @@
 import { useListing } from '../hooks/useListing';
 import { useToast } from '../components/ToastProvider';
 import { X, Star, ShieldCheck, MapPin, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowLeft, Coffee, Utensils, Wifi, Tv, ArrowDownUp, Briefcase, Car, Fence, Refrigerator, Microwave, Cctv, Search, Layers, Navigation, Home, Maximize, Heart, Loader2 } from 'lucide-react';
+import { AMENITY_ICONS } from '../data/amenities';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -438,74 +439,35 @@ export default function ListingDetail() {
 
             <div className="py-12 border-b border-gray-100">
               <h3 className="text-2xl font-semibold text-neutral-900 mb-8">What this place offers</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Utensils size={20} strokeWidth={2} className="text-white" />
+              {listing.amenities && listing.amenities.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-10">
+                    {listing.amenities
+                      .slice(0, showAllAmenities ? listing.amenities.length : 8)
+                      .map((amenity: string) => {
+                        const IconComponent = AMENITY_ICONS[amenity] || Home;
+                        return (
+                          <div key={amenity} className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
+                              <IconComponent size={20} strokeWidth={2} className="text-white" />
+                            </div>
+                            <span className="text-[16px] text-neutral-800 font-medium">{amenity}</span>
+                          </div>
+                        );
+                      })}
                   </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Kitchen</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Wifi size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Wifi</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Tv size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">TV</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <ArrowDownUp size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Elevator</span>
-                </div>
-                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Fence size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Private patio or balcony</span>
-                </div>
-                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Briefcase size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Luggage dropoff allowed</span>
-                </div>
-                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Refrigerator size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Refrigerator</span>
-                </div>
-                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Microwave size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Microwave</span>
-                </div>
-                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Car size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Paid parking off premises</span>
-                </div>
-                <div className={cn("items-center gap-4", showAllAmenities ? "flex" : "hidden")}>
-                  <div className="w-11 h-11 rounded-full bg-[#17294F] flex items-center justify-center shrink-0 shadow-md">
-                    <Cctv size={20} strokeWidth={2} className="text-white" />
-                  </div>
-                  <span className="text-[16px] text-neutral-800 font-medium">Exterior security cameras on property</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowAllAmenities(!showAllAmenities)}
-                className="px-6 py-3 border-2 border-[#17294F] text-[#17294F] rounded-xl font-bold hover:bg-[#17294F]/5 transition active:scale-95 inline-block"
-              >
-                {showAllAmenities ? 'Show less' : 'Show all 28 amenities'}
-              </button>
+                  {listing.amenities.length > 8 && (
+                    <button 
+                      onClick={() => setShowAllAmenities(!showAllAmenities)}
+                      className="px-6 py-3 border-2 border-[#17294F] text-[#17294F] rounded-xl font-bold hover:bg-[#17294F]/5 transition active:scale-95 inline-block"
+                    >
+                      {showAllAmenities ? 'Show less' : `Show all ${listing.amenities.length} amenities`}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p className="text-neutral-500 text-sm italic">No amenities specified for this listing.</p>
+              )}
             </div>
 
             {/* Tabbed Property Information */}
@@ -590,7 +552,9 @@ export default function ListingDetail() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-neutral-900">{listing.location}</h3>
-                  <p className="text-neutral-500 max-w-lg mt-1">8.2280° N, 124.2452° E</p>
+                  <p className="text-neutral-500 max-w-lg mt-1">
+                    {listing.lat ? `${Number(listing.lat).toFixed(4)}° N` : '8.2280° N'}, {listing.lng ? `${Number(listing.lng).toFixed(4)}° E` : '124.2452° E'}
+                  </p>
                 </div>
               </div>
 
@@ -601,8 +565,8 @@ export default function ListingDetail() {
               >
                 <div className="absolute inset-0 z-20 group-hover:bg-black/5 transition-colors rounded-3xl" />
                 <MapTilerView 
-                  lat={8.2280} 
-                  lng={124.2452} 
+                  lat={listing.lat ? Number(listing.lat) : 8.2280} 
+                  lng={listing.lng ? Number(listing.lng) : 124.2452} 
                   title={listing.title} 
                 />
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
@@ -670,7 +634,7 @@ export default function ListingDetail() {
                           .eq('id', landlordId)
                           .single();
                         
-                        const receiverName = landlordProfile?.full_name || landlordProfile?.nickname || displayHost.name || 'Landlord';
+                        const receiverName = landlordProfile?.nickname || landlordProfile?.full_name || displayHost.name || 'Landlord';
 
                         // Fetch user profile
                         const { data: myProfile } = await supabase
@@ -679,7 +643,7 @@ export default function ListingDetail() {
                           .eq('id', user.id)
                           .single();
 
-                        const senderName = myProfile?.full_name || myProfile?.nickname || user.email?.split('@')[0] || 'User';
+                        const senderName = myProfile?.nickname || myProfile?.full_name || user.email?.split('@')[0] || 'User';
 
                         const { data: newConv } = await supabase
                           .from('conversations')
@@ -960,8 +924,8 @@ export default function ListingDetail() {
 
               <div className="flex-1 w-full h-full">
                 <MapTilerView 
-                  lat={8.2280} 
-                  lng={124.2452} 
+                  lat={listing.lat ? Number(listing.lat) : 8.2280} 
+                  lng={listing.lng ? Number(listing.lng) : 124.2452} 
                   title={listing.title} 
                 />
               </div>
@@ -972,8 +936,10 @@ export default function ListingDetail() {
                     <Navigation size={16} className="text-white fill-white/20" />
                   </div>
                   <div className="flex flex-col pr-2">
-                    <h4 className="text-xs font-black text-white leading-tight">Pala-o, Iligan City</h4>
-                    <p className="text-[8px] font-bold text-white/30 mt-0.5 uppercase tracking-wider">8.2280° N, 124.2452° E</p>
+                    <h4 className="text-xs font-black text-white leading-tight">{listing.location}</h4>
+                    <p className="text-[8px] font-bold text-white/30 mt-0.5 uppercase tracking-wider">
+                      {listing.lat ? `${Number(listing.lat).toFixed(4)}° N` : '8.2280° N'}, {listing.lng ? `${Number(listing.lng).toFixed(4)}° E` : '124.2452° E'}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -212,7 +212,7 @@ export default function RoommateModal({ roommate, isOpen, onClose }: RoommateMod
                                       .eq('id', targetUserId)
                                       .single();
 
-                                    const receiverName = roommateProfile?.full_name || roommateProfile?.nickname || roommate.name || 'Roommate';
+                                    const receiverName = roommateProfile?.nickname || roommateProfile?.full_name || roommate.name || 'Roommate';
 
                                     // Fetch user profile
                                     const { data: myProfile } = await supabase
@@ -221,7 +221,7 @@ export default function RoommateModal({ roommate, isOpen, onClose }: RoommateMod
                                       .eq('id', user.id)
                                       .single();
 
-                                    const senderName = myProfile?.full_name || myProfile?.nickname || user.email?.split('@')[0] || 'User';
+                                    const senderName = myProfile?.nickname || myProfile?.full_name || user.email?.split('@')[0] || 'User';
 
                                     const { data: newConv } = await supabase
                                       .from('conversations')

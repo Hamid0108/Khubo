@@ -50,8 +50,8 @@ export default function Messages() {
           .from('conversations')
           .select(`
             *,
-            sender:sender_id(role, avatar_url),
-            receiver:receiver_id(role, avatar_url)
+            sender:sender_id(role, avatar_url, nickname, full_name),
+            receiver:receiver_id(role, avatar_url, nickname, full_name)
           `)
           .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
           .order('last_message_time', { ascending: false });
@@ -60,7 +60,8 @@ export default function Messages() {
           const mapped = data.map((c: any) => {
             const isReceiver = c.receiver_id === user?.id;
             const otherProfile = isReceiver ? c.sender : c.receiver;
-            const otherName = isReceiver ? c.sender_name : c.receiver_name;
+            const fallbackName = isReceiver ? c.sender_name : c.receiver_name;
+            const otherName = otherProfile?.nickname || otherProfile?.full_name || fallbackName;
             const otherRole = otherProfile?.role 
               ? (otherProfile.role === 'landlord' ? 'Landlord' : 'Roommate') 
               : (otherName?.toLowerCase().includes('landlord') ? 'Landlord' : 'Roommate');
