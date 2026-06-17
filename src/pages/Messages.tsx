@@ -31,6 +31,57 @@ const readFileAsDataURL = (file: File): Promise<string> => {
   });
 };
 
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      readFileAsDataURL(file).then(resolve).catch(() => resolve(''));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.6));
+        } else {
+          resolve(event.target?.result as string);
+        }
+      };
+      img.onerror = () => {
+        resolve(event.target?.result as string);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      resolve('');
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function Messages() {
   const { user } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
@@ -355,7 +406,7 @@ export default function Messages() {
       else actualType = 'file';
 
       try {
-        const url = await readFileAsDataURL(file);
+        const url = await compressImage(file);
         return {
           id: Date.now().toString() + Math.random().toString(36).substring(7),
           type: actualType,
@@ -383,7 +434,7 @@ export default function Messages() {
       else if (file.type.startsWith('video/')) actualType = 'video';
 
       try {
-        const url = await readFileAsDataURL(file);
+        const url = await compressImage(file);
         return {
           id: Date.now().toString() + Math.random().toString(36).substring(7),
           type: actualType,
@@ -405,7 +456,7 @@ export default function Messages() {
 
   const handleCameraCapture = async (file: File) => {
     try {
-      const url = await readFileAsDataURL(file);
+      const url = await compressImage(file);
       const newAttachment = {
         id: Date.now().toString() + Math.random().toString(36).substring(7),
         type: 'image' as const,
