@@ -22,6 +22,15 @@ export type Attachment = {
   file?: File;
 };
 
+const readFileAsDataURL = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function Messages() {
   const { user } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
@@ -335,66 +344,83 @@ export default function Messages() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'file') => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'file') => {
     const files = e.target.files;
     if (!files) return;
 
-    const newAttachments = Array.from(files).map(file => {
+    const promises: Promise<Attachment | null>[] = Array.from(files).map(async (file) => {
       let actualType = type;
       if (file.type.startsWith('image/')) actualType = 'image';
       else if (file.type.startsWith('video/')) actualType = 'video';
       else actualType = 'file';
 
-      return {
-        id: Date.now().toString() + Math.random().toString(36).substring(7),
-        type: actualType,
-        url: URL.createObjectURL(file),
-        name: file.name,
-        file
-      };
+      try {
+        const url = await readFileAsDataURL(file);
+        return {
+          id: Date.now().toString() + Math.random().toString(36).substring(7),
+          type: actualType,
+          url,
+          name: file.name,
+          file
+        };
+      } catch (err) {
+        console.error('Error reading file:', err);
+        return null;
+      }
     });
 
-    setAttachments(prev => [...prev, ...newAttachments]);
+    const results = await Promise.all(promises);
+    const validAttachments = results.filter((item): item is Attachment => item !== null);
+
+    setAttachments(prev => [...prev, ...validAttachments]);
     if (e.target) e.target.value = '';
   };
 
-  const handleModalUpload = (files: File[]) => {
-    const newAttachments = files.map(file => {
+  const handleModalUpload = async (files: File[]) => {
+    const promises: Promise<Attachment | null>[] = files.map(async (file) => {
       let actualType: 'image' | 'video' | 'file' = 'file';
       if (file.type.startsWith('image/')) actualType = 'image';
       else if (file.type.startsWith('video/')) actualType = 'video';
 
-      return {
+      try {
+        const url = await readFileAsDataURL(file);
+        return {
+          id: Date.now().toString() + Math.random().toString(36).substring(7),
+          type: actualType,
+          url,
+          name: file.name,
+          file
+        };
+      } catch (err) {
+        console.error('Error reading file:', err);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(promises);
+    const validAttachments = results.filter((item): item is Attachment => item !== null);
+
+    setAttachments(prev => [...prev, ...validAttachments]);
+  };
+
+  const handleCameraCapture = async (file: File) => {
+    try {
+      const url = await readFileAsDataURL(file);
+      const newAttachment = {
         id: Date.now().toString() + Math.random().toString(36).substring(7),
-        type: actualType,
-        url: URL.createObjectURL(file),
+        type: 'image' as const,
+        url,
         name: file.name,
         file
       };
-    });
-
-    setAttachments(prev => [...prev, ...newAttachments]);
-  };
-
-  const handleCameraCapture = (file: File) => {
-    const newAttachment = {
-      id: Date.now().toString() + Math.random().toString(36).substring(7),
-      type: 'image' as const,
-      url: URL.createObjectURL(file),
-      name: file.name,
-      file
-    };
-    setAttachments(prev => [...prev, newAttachment]);
+      setAttachments(prev => [...prev, newAttachment]);
+    } catch (err) {
+      console.error('Error reading camera capture file:', err);
+    }
   };
 
   const removeAttachment = (id: string) => {
-    setAttachments(prev => {
-      const index = prev.findIndex(a => a.id === id);
-      if (index !== -1) {
-        URL.revokeObjectURL(prev[index].url);
-      }
-      return prev.filter(a => a.id !== id);
-    });
+    setAttachments(prev => prev.filter(a => a.id !== id));
   };
 
   // ── Send message ──────────────────────────────────────────────────────────
