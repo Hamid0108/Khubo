@@ -337,19 +337,59 @@ export function EditListingModal({ isOpen, onClose, onSuccess, listing }: EditLi
         throw new Error('Please have at least one image.');
       }
 
-      // Convert new File objects to base64 Data URLs
-      const convertToBase64 = (file: File): Promise<string> => {
+      // Compress and convert local File objects to base64 Data URLs for performance and persistence
+      const compressListingImage = (file: File): Promise<string> => {
         return new Promise((resolve) => {
+          if (!file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => resolve('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800');
+            return;
+          }
+
           const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => {
-            resolve('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800');
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 1000;
+              const MAX_HEIGHT = 1000;
+              let width = img.width;
+              let height = img.height;
+
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, width, height);
+                // Compress to jpeg format with 0.7 quality
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+              } else {
+                resolve(event.target?.result as string);
+              }
+            };
+            img.onerror = () => resolve(event.target?.result as string);
+            img.src = event.target?.result as string;
           };
+          reader.onerror = () => resolve('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800');
+          reader.readAsDataURL(file);
         });
       };
 
-      const newlyUploadedUrls = await Promise.all(newImages.map(convertToBase64));
+      const newlyUploadedUrls = await Promise.all(newImages.map(compressListingImage));
       const finalGallery = [...existingImages, ...newlyUploadedUrls];
 
       const combinedLocation = `${specificAddress ? specificAddress + ', ' : ''}${selectedBarangay}, ${selectedCity}`;

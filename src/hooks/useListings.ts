@@ -14,7 +14,7 @@ export function useListings() {
       try {
         const { data, error: sbError } = await supabase
           .from('listings')
-          .select('*')
+          .select('id, title, location, description, price, rating, image, category, date, amenities, lat, lng, landlord_id')
           .order('created_at', { ascending: false });
 
         if (sbError) throw sbError;
