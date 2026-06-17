@@ -7,7 +7,7 @@ import Filters, { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
 import { ROOMMATES } from '../mocks/roommates';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, ChevronLeft, ChevronRight, ChevronDown, MapPin, Calendar as CalendarIcon, Wallet, X } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, ChevronDown, MapPin, Calendar as CalendarIcon, Wallet, X, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RoommateModal from '../components/RoommateModal';
 import { Roommate } from '../types';
@@ -15,6 +15,7 @@ import RoommateSearchDropdown from '../components/RoommateSearchDropdown';
 import { useRoommates } from '../hooks/useRoommates';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/AuthContext';
+import CreatePostModal from '../components/CreatePostModal';
 
 const TAGS = [
   'ALL', 'Near MSU-IIT', 'All Female', 'Solo Room', 'Shared Room', 'All Male', 
@@ -117,19 +118,10 @@ export default function RoommateFinder() {
   }, [searchQuery, selectedLocation, selectedBudget]);
 
   // Aligned roommate list states
-  const { roommates: roommatesList, setRoommates: setRoommatesList, loading: roommatesLoading } = useRoommates();
-  const [isCreateRequestOpen, setIsCreateRequestOpen] = useState(false);
-  const [newRequest, setNewRequest] = useState({
-    name: 'Micheal B. Jordan',
-    age: 20,
-    gender: 'Female' as const,
-    university: 'MSU-IIT',
-    location: 'Tibanga, Iligan City',
-    budgetRange: 'P2500-P3000',
-    preferredPlace: "Layla's Residences",
-    bio: 'CS student, very quiet, stays up late coding. Looking for similar student boarders!',
-    tags: 'Quiet, Clean, CS Student'
-  });
+  const { roommates: roommatesList, setRoommates: setRoommatesList, loading: roommatesLoading, refetch: refetchRoommates } = useRoommates();
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [postMode, setPostMode] = useState<'applying' | 'finding'>('applying');
+  const [profile, setProfile] = useState<any>(null);
 
   React.useEffect(() => {
     try {
@@ -137,30 +129,17 @@ export default function RoommateFinder() {
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed) {
-          setNewRequest(prev => ({
-            ...prev,
-            name: parsed.nickname || parsed.full_name || prev.name,
-            location: parsed.location || prev.location,
-            university: parsed.school_or_company || prev.university,
-            bio: parsed.bio || prev.bio,
-            gender: parsed.gender || prev.gender,
-            tags: parsed.lifestyle && parsed.lifestyle.length > 0 
-              ? parsed.lifestyle.map((id: string) => {
-                  const labelMap: Record<string, string> = {
-                    pet_friendly: 'Pet-friendly', non_smoker: 'Non-smoker', vegan: 'Vegan',
-                    fitness: 'Gym lover', music: 'Into music', foodie: 'Foodie',
-                    social: 'Social butterfly', introvert: 'Introvert', remote_work: 'Remote worker', studious: 'Studious'
-                  };
-                  return labelMap[id] || id;
-                }).join(', ')
-              : prev.tags
-          }));
+          setProfile(parsed);
         }
       }
     } catch (e) {
       console.error(e);
     }
   }, [user]);
+
+  const displayName = profile?.nickname || profile?.full_name || user?.email?.split('@')[0] || 'Khubo User';
+  const displayAvatar = profile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200';
+  const firstName = displayName.split(' ')[0];
 
   React.useEffect(() => {
     if (roommatesLoading) {
@@ -682,7 +661,39 @@ export default function RoommateFinder() {
       <div ref={searchObserverRef} className="w-full h-[1px] invisible pointer-events-none" />
       
       <main className="max-w-[2520px] mx-auto xl:px-12 md:px-12 sm:px-4 px-4 pt-10">
-        <div className="flex flex-col gap-16">
+        <div className="flex flex-col gap-10 md:gap-16">
+          <div className="w-full flex flex-col gap-5 pt-2">
+            <div className="flex items-center gap-3 w-full">
+              <img src={displayAvatar} alt="Profile" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shrink-0 shadow-sm border border-neutral-200" />
+              <input
+                type="text"
+                className="flex-1 bg-white border border-neutral-200 rounded-full px-5 py-3 md:py-3.5 font-medium text-neutral-800 placeholder:text-neutral-500 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#2252D6]/20 focus:border-[#2252D6] transition shadow-sm text-sm md:text-base cursor-pointer"
+                placeholder={postMode === 'finding' ? `What kind of roommate are you looking for, ${firstName}?` : `Tell us about yourself, ${firstName}?`}
+                readOnly
+                onClick={() => setIsCreatePostOpen(true)}
+              />
+            </div>
+
+            <div className="flex items-center justify-center w-full pb-2 sm:pb-0">
+              <div className="inline-flex bg-white rounded-full p-1 shadow-sm border border-neutral-200">
+                  <button 
+                    onClick={() => setPostMode('applying')}
+                    className={`flex items-center justify-center gap-1.5 sm:gap-2.5 transition-all px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-full whitespace-nowrap ${postMode === 'applying' ? 'bg-neutral-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
+                  >
+                     <UserPlus size={14} className={`shrink-0 md:w-[18px] md:h-[18px] ${postMode === 'applying' ? 'text-white' : 'text-neutral-400 group-hover:text-neutral-600'}`} />
+                     <span className="font-semibold text-[11px] sm:text-[15px]">Applying as Roommate</span>
+                  </button>
+                  <button 
+                    onClick={() => setPostMode('finding')}
+                    className={`flex items-center justify-center gap-1.5 sm:gap-2.5 transition-all px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-full whitespace-nowrap ${postMode === 'finding' ? 'bg-neutral-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
+                  >
+                     <Search size={14} className={`shrink-0 md:w-[18px] md:h-[18px] ${postMode === 'finding' ? 'text-white' : 'text-neutral-400 group-hover:text-neutral-600'}`} />
+                     <span className="font-semibold text-[11px] sm:text-[15px]">Finding Roommate</span>
+                  </button>
+              </div>
+            </div>
+          </div>
+
           {/* Recommended Section */}
           <div className="flex flex-col gap-5 md:gap-6">
             <div className="flex items-center justify-between">
@@ -693,27 +704,19 @@ export default function RoommateFinder() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setIsCreateRequestOpen(true)}
-                  className="px-5 py-2.5 bg-[#17294F] hover:bg-[#1e3466] text-white rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer"
+              <div className="hidden md:flex items-center gap-3">
+                <button 
+                  onClick={() => scroll(recommendedRef, 'left')}
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-90"
                 >
-                  + Post Request
+                  <ChevronLeft size={20} />
                 </button>
-                <div className="hidden md:flex items-center gap-3">
-                  <button 
-                    onClick={() => scroll(recommendedRef, 'left')}
-                    className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-95"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button 
-                    onClick={() => scroll(recommendedRef, 'right')}
-                    className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-95"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
+                <button 
+                  onClick={() => scroll(recommendedRef, 'right')}
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-black hover:bg-neutral-50 transition-all active:scale-90"
+                >
+                  <ChevronRight size={20} />
+                </button>
               </div>
             </div>
             
@@ -816,182 +819,12 @@ export default function RoommateFinder() {
         onClose={closeProfile} 
       />
 
-      {/* Create Roommate Request Modal */}
-      <AnimatePresence>
-        {isCreateRequestOpen && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-            <motion.div
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               onClick={() => setIsCreateRequestOpen(false)}
-               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-               initial={{ opacity: 0, scale: 0.95, y: 20 }}
-               animate={{ opacity: 1, scale: 1, y: 0 }}
-               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-               className="relative w-full max-w-md bg-white rounded-[2rem] overflow-hidden shadow-2xl z-10 text-neutral-900"
-            >
-              <div className="flex items-center justify-center p-4 border-b border-neutral-100 relative">
-                 <button 
-                   onClick={() => setIsCreateRequestOpen(false)}
-                   className="absolute left-4 p-2 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer"
-                 >
-                   <X size={20} />
-                 </button>
-                 <h2 className="font-bold text-lg">Post Roommate Request</h2>
-              </div>
-              <form 
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const tagsArr = newRequest.tags.split(',').map(t => t.trim()).filter(Boolean);
-                  const newRoommate: Roommate = {
-                    id: 'rm-user-' + Date.now(),
-                    name: newRequest.name,
-                    age: Number(newRequest.age),
-                    gender: newRequest.gender,
-                    university: newRequest.university,
-                    location: newRequest.location,
-                    budgetRange: newRequest.budgetRange,
-                    preferredPlace: newRequest.preferredPlace,
-                    bio: newRequest.bio,
-                    image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newRequest.name}`,
-                    tags: tagsArr.length > 0 ? tagsArr : ['Quiet', 'Clean']
-                  };
-                  
-                  try {
-                    await supabase.from('roommates').insert({
-                      id: newRoommate.id,
-                      name: newRoommate.name,
-                      age: newRoommate.age,
-                      gender: newRoommate.gender,
-                      university: newRoommate.university,
-                      location: newRoommate.location,
-                      budget_range: newRoommate.budgetRange,
-                      preferred_place: newRoommate.preferredPlace,
-                      bio: newRoommate.bio,
-                      image: newRoommate.image,
-                      tags: newRoommate.tags,
-                      user_id: user?.id || null
-                    });
-                  } catch (err) {
-                    console.error('Failed to save roommate to Supabase:', err);
-                  }
-                  
-                  setRoommatesList([newRoommate, ...roommatesList]);
-                  setIsCreateRequestOpen(false);
-                  
-                  // Reset form
-                  setNewRequest({
-                    name: 'Micheal B. Jordan',
-                    age: 20,
-                    gender: 'Female',
-                    university: 'MSU-IIT',
-                    location: 'Tibanga, Iligan City',
-                    budgetRange: 'P2500-P3000',
-                    preferredPlace: "Layla's Residences",
-                    bio: 'CS student, very quiet, stays up late coding. Looking for similar student boarders!',
-                    tags: 'Quiet, Clean, CS Student'
-                  });
-                  alert('Roommate request posted successfully!');
-                }}
-                className="p-6 space-y-4 text-left max-h-[75vh] overflow-y-auto"
-              >
-                <div>
-                  <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Your Name</label>
-                  <input 
-                    type="text" 
-                    value={newRequest.name} 
-                    onChange={e => setNewRequest({ ...newRequest, name: e.target.value })}
-                    required
-                    className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Age</label>
-                    <input 
-                      type="number" 
-                      value={newRequest.age} 
-                      onChange={e => setNewRequest({ ...newRequest, age: Number(e.target.value) })}
-                      required
-                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Gender</label>
-                    <select 
-                      value={newRequest.gender} 
-                      onChange={e => setNewRequest({ ...newRequest, gender: e.target.value as any })}
-                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all bg-white"
-                    >
-                      <option>Male</option>
-                      <option>Female</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Preferred Location</label>
-                    <input 
-                      type="text" 
-                      value={newRequest.location} 
-                      onChange={e => setNewRequest({ ...newRequest, location: e.target.value })}
-                      required
-                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Monthly Budget</label>
-                    <input 
-                      type="text" 
-                      value={newRequest.budgetRange} 
-                      onChange={e => setNewRequest({ ...newRequest, budgetRange: e.target.value })}
-                      placeholder="e.g. P2500-P3000"
-                      required
-                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Brief Bio</label>
-                  <textarea 
-                    value={newRequest.bio} 
-                    onChange={e => setNewRequest({ ...newRequest, bio: e.target.value })}
-                    required
-                    rows={3}
-                    className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-[#17294F] uppercase tracking-wider block mb-1">Tags (comma-separated)</label>
-                  <input 
-                    type="text" 
-                    value={newRequest.tags} 
-                    onChange={e => setNewRequest({ ...newRequest, tags: e.target.value })}
-                    placeholder="e.g. Quiet, Clean, Gym-goer"
-                    required
-                    className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#17294F] transition-all"
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full bg-[#17294F] text-white py-3 rounded-xl font-bold uppercase tracking-widest mt-2 hover:bg-[#1e3466] transition-colors shadow-md cursor-pointer"
-                >
-                  Submit Request
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <CreatePostModal 
+        isOpen={isCreatePostOpen} 
+        onClose={() => setIsCreatePostOpen(false)} 
+        postMode={postMode} 
+        onPostCreated={() => refetchRoommates()} 
+      />
     </div>
   );
 }

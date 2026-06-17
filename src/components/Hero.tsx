@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { DateScrollPicker } from './DateScrollPicker';
 import SearchDropdown from './SearchDropdown';
+import { AnnouncementsOverlay } from './AnnouncementsOverlay';
 
 interface HeroProps {
   searchQuery?: string;
@@ -38,6 +39,7 @@ export default function Hero({
   const [activeDropdown, setActiveDropdown] = useState<'location' | 'dates' | 'budget' | 'general' | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [hideDropdown, setHideDropdown] = useState(false);
+  const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
 
   useEffect(() => {
     if (isSearchActive) {
@@ -89,7 +91,11 @@ export default function Hero({
             />
           </button>
 
-          <button aria-label="Announcements" className="flex items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-transparent text-white transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full">
+          <button 
+            aria-label="Announcements" 
+            onClick={() => setIsAnnouncementsOpen(true)}
+            className="flex items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-transparent text-white transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full"
+          >
             <Megaphone className="w-5 h-5 md:w-8 md:h-8" />
           </button>
         </div>
@@ -406,6 +412,7 @@ export default function Hero({
           </div>
         </div>
       </div>
+      <AnnouncementsOverlay isOpen={isAnnouncementsOpen} onClose={() => setIsAnnouncementsOpen(false)} />
     </div>
   );
 }

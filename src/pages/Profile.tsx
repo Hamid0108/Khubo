@@ -37,6 +37,7 @@ import { PhotoCarouselOverlay } from '../components/PhotoCarouselOverlay';
 import { useToast } from '../components/ToastProvider';
 import { cn } from '../lib/utils';
 import { AuthModal } from '../components/AuthModal';
+import { AnnouncementsOverlay } from '../components/AnnouncementsOverlay';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ export default function Profile() {
   const [landlordPassword, setLandlordPassword] = useState('');
   const [showLandlordPassword, setShowLandlordPassword] = useState(false);
 
-  // Profile data — use saved profile if available, else defaults
+  // Profile data â€” use saved profile if available, else defaults
   const [profileName, setProfileName] = useState(() => savedProfile?.nickname || savedProfile?.full_name || user?.email?.split('@')[0] || 'Khubo User');
   const [isEditingName, setIsEditingName] = useState(false);
   const [profileBio, setProfileBio] = useState(() => savedProfile?.bio || '"Clean and organized. Looking for a place near the city center. I cook often and enjoy a shared meal!"');
@@ -148,6 +149,7 @@ export default function Profile() {
 
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
 
   const [savedListings, setSavedListings] = useState<any[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
@@ -710,7 +712,7 @@ export default function Profile() {
   const handleAcceptRoommateInvitation = async (conv: any) => {
     if (!user) return;
     try {
-      const systemText = `👋 Match confirmed! Roommate invitation accepted. You and ${conv.name} are now connected. Start coordinating your co-living plans!`;
+      const systemText = `ðŸ‘‹ Match confirmed! Roommate invitation accepted. You and ${conv.name} are now connected. Start coordinating your co-living plans!`;
       
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(conv.id);
 
@@ -777,7 +779,7 @@ export default function Profile() {
         }
       }
 
-      showToast(`Match confirmed with ${conv.name}! 🎉`);
+      showToast(`Match confirmed with ${conv.name}! ðŸŽ‰`);
       fetchProfileStatsData();
     } catch (err) {
       console.error("Error accepting roommate invitation:", err);
@@ -859,7 +861,7 @@ export default function Profile() {
       setHasLandlordAccount(true);
       setIsLandlord(true);
       setShowSignupModal(false);
-      showToast(isLandlordLogin ? "Logged in to Landlord dashboard! 🏠" : "Registered landlord account successfully! 🎉");
+      showToast(isLandlordLogin ? "Logged in to Landlord dashboard! ðŸ " : "Registered landlord account successfully! ðŸŽ‰");
     } catch (err: any) {
       showToast(`Error: ${err.message || err}`);
     } finally {
@@ -953,7 +955,10 @@ export default function Profile() {
           <button onClick={handleBack} className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer">
              <ArrowLeft size={24} className="md:w-8 md:h-8" />
           </button>
-          <button className="p-2 -mr-2 text-white hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer">
+          <button 
+            onClick={() => setIsAnnouncementsOpen(true)}
+            className="p-2 -mr-2 text-white hover:bg-white/10 rounded-full transition pointer-events-auto cursor-pointer"
+          >
              <Megaphone className="w-6 h-6 md:w-7 md:h-7" />
           </button>
         </div>
@@ -1114,7 +1119,7 @@ export default function Profile() {
               onClick={() => navigate('/profile-setup')}
               className="shrink-0 px-4 py-2 bg-[#2252D6] text-white text-xs font-bold rounded-xl hover:bg-[#1b43b3] transition-all active:scale-95 whitespace-nowrap"
             >
-              Set Up →
+              Set Up â†’
             </button>
           </motion.div>
         )}
@@ -1153,7 +1158,7 @@ export default function Profile() {
                { title: 'Properties', count: propertiesCount.toString(), sub: 'Listed', tab: 'properties' },
                { title: 'Tenants', count: tenantsCount.toString(), sub: 'Active', tab: 'tenants' },
                { title: 'Reservations', count: pendingCount.toString(), sub: 'Pending', tab: 'reservations' },
-               { title: 'Revenue', count: `₱${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Earnings', tab: 'overview' }
+               { title: 'Revenue', count: `â‚±${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Earnings', tab: 'overview' }
              ] : [
                { title: 'Saved', count: savedCount.toString(), sub: 'Houses', tab: 'overview' },
                { title: 'Reservation', count: activeReservationsCount.toString(), sub: 'Active', tab: 'overview' },
@@ -1236,20 +1241,20 @@ export default function Profile() {
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-neutral-500">Holding Deposits (₱1,000 / tenant)</span>
-                      <span className="font-bold text-neutral-950">₱{(tenantsCount * 1000).toLocaleString()}</span>
+                      <span className="text-neutral-500">Holding Deposits (â‚±1,000 / tenant)</span>
+                      <span className="font-bold text-neutral-950">â‚±{(tenantsCount * 1000).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-neutral-500">Advance Rents (1 Month Approved)</span>
-                      <span className="font-bold text-neutral-950">₱{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
+                      <span className="font-bold text-neutral-950">â‚±{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-neutral-500">Security Deposits (1 Month Approved)</span>
-                      <span className="font-bold text-neutral-950">₱{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
+                      <span className="font-bold text-neutral-950">â‚±{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
                     </div>
                     <div className="border-t border-neutral-100 pt-4 mt-2 flex justify-between items-center text-[#17294F]">
                       <span className="font-black text-xs uppercase tracking-wider">Gross Revenue</span>
-                      <span className="font-black text-xl">₱{(totalRevenue * 2).toLocaleString()}</span>
+                      <span className="font-black text-xl">â‚±{(totalRevenue * 2).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -1288,7 +1293,7 @@ export default function Profile() {
                       
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-t border-neutral-50 pt-3 mt-2">
                         <div className="flex items-baseline gap-1">
-                          <span className="text-xl font-black text-black">₱{res.price.toLocaleString()}</span>
+                          <span className="text-xl font-black text-black">â‚±{res.price.toLocaleString()}</span>
                           <span className="text-[10px] text-neutral-400 font-bold uppercase">/month</span>
                         </div>
                         <div className="flex gap-2.5 w-full sm:w-auto">
@@ -1350,7 +1355,7 @@ export default function Profile() {
                           <div className="flex justify-between items-center py-1">
                             <div className="flex flex-col">
                               <span className="text-xs font-extrabold text-neutral-950">Room 1 (Single Bed)</span>
-                              <span className="text-[10px] text-neutral-400 mt-0.5">₱{listing.price.toLocaleString()}/mo</span>
+                              <span className="text-[10px] text-neutral-400 mt-0.5">â‚±{listing.price.toLocaleString()}/mo</span>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={cn(
@@ -1375,7 +1380,7 @@ export default function Profile() {
                           <div className="flex justify-between items-center py-1 border-t border-neutral-50 pt-2">
                             <div className="flex flex-col">
                               <span className="text-xs font-extrabold text-neutral-950">Room 2 (Double Bed)</span>
-                              <span className="text-[10px] text-neutral-400 mt-0.5">₱{Math.round(listing.price * 1.25).toLocaleString()}/mo</span>
+                              <span className="text-[10px] text-neutral-400 mt-0.5">â‚±{Math.round(listing.price * 1.25).toLocaleString()}/mo</span>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={cn(
@@ -1432,7 +1437,7 @@ export default function Profile() {
                             </td>
                             <td className="py-4 px-6 truncate max-w-[150px]">{res.listingTitle}</td>
                             <td className="py-4 px-6 font-medium text-[10px] text-neutral-500 uppercase tracking-wide">{res.roomName}</td>
-                            <td className="py-4 px-6 font-bold text-neutral-950">₱{res.price.toLocaleString()}</td>
+                            <td className="py-4 px-6 font-bold text-neutral-950">â‚±{res.price.toLocaleString()}</td>
                             <td className="py-4 px-6 font-mono text-neutral-500">{res.moveInDate}</td>
                             <td className="py-4 px-6 text-center">
                               <div className="flex items-center justify-center gap-2">
@@ -1503,7 +1508,7 @@ export default function Profile() {
                           
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-t border-neutral-50 pt-3 mt-2">
                             <div className="flex items-baseline gap-1">
-                              <span className="text-xl font-black text-black">₱{listing.price.toLocaleString()}</span>
+                              <span className="text-xl font-black text-black">â‚±{listing.price.toLocaleString()}</span>
                               <span className="text-[10px] text-neutral-400 font-bold">/month</span>
                             </div>
                             <div className="flex gap-2.5 w-full sm:w-auto">
@@ -1589,7 +1594,7 @@ export default function Profile() {
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-8 md:mt-0 pt-4 border-t border-neutral-50">
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl md:text-[28px] font-black text-black">₱{res.price.toLocaleString()}</span>
+                        <span className="text-2xl md:text-[28px] font-black text-black">â‚±{res.price.toLocaleString()}</span>
                         <span className="text-sm md:text-base font-medium text-neutral-500">/month</span>
                       </div>
                     </div>
@@ -1897,8 +1902,8 @@ export default function Profile() {
                           <h4 className="font-bold text-neutral-900 text-sm truncate">{listing.title}</h4>
                           <p className="text-xs text-neutral-500 truncate">{listing.location}</p>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-black text-black text-xs">₱{listing.price.toLocaleString()}/mo</span>
-                            <span className="text-[10px] text-neutral-400 font-bold">★ {listing.rating || '5.0'}</span>
+                            <span className="font-black text-black text-xs">â‚±{listing.price.toLocaleString()}/mo</span>
+                            <span className="text-[10px] text-neutral-400 font-bold">â˜… {listing.rating || '5.0'}</span>
                           </div>
                         </div>
                       </div>
@@ -1939,7 +1944,7 @@ export default function Profile() {
                         <div className="flex justify-between items-end text-xs mt-3 border-t border-neutral-100/50 pt-2">
                           <div>
                             <p className="text-neutral-500 font-medium">Move-in: <span className="font-bold text-neutral-800">{res.moveInDate}</span></p>
-                            <p className="font-black text-black mt-0.5">₱{res.price.toLocaleString()}/mo</p>
+                            <p className="font-black text-black mt-0.5">â‚±{res.price.toLocaleString()}/mo</p>
                           </div>
                           {(res.status === 'Active' || res.status === 'Approved') && (
                             <button 
@@ -2078,7 +2083,7 @@ export default function Profile() {
                             </button>
                           ) : (
                             <span className="flex-1 py-2 bg-green-50 text-green-700 border border-green-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-center flex items-center justify-center">
-                              Matched 🎉
+                              Matched ðŸŽ‰
                             </span>
                           )}
                         </div>
@@ -2141,8 +2146,8 @@ export default function Profile() {
                   <div className="flex justify-between"><span>Property:</span><span className="font-bold text-neutral-950 truncate max-w-[180px]">{selectedReservationDetail.listingTitle}</span></div>
                   <div className="flex justify-between"><span>Room Layout:</span><span className="text-[#17294F] font-bold">{selectedReservationDetail.roomName}</span></div>
                   <div className="flex justify-between"><span>Move-in Date:</span><span className="font-bold text-neutral-950">{selectedReservationDetail.moveInDate}</span></div>
-                  <div className="flex justify-between"><span>Monthly Rent:</span><span className="font-black text-neutral-950">₱{selectedReservationDetail.price.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>Holding Deposit:</span><span className="text-green-600 font-extrabold">₱1,000 Paid (Authorized)</span></div>
+                  <div className="flex justify-between"><span>Monthly Rent:</span><span className="font-black text-neutral-950">â‚±{selectedReservationDetail.price.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Holding Deposit:</span><span className="text-green-600 font-extrabold">â‚±1,000 Paid (Authorized)</span></div>
                   <div className="flex justify-between"><span>Contract Terms:</span><span>6 Months Minimum</span></div>
                 </div>
 
@@ -2234,7 +2239,7 @@ export default function Profile() {
 
               {/* Body */}
               <p className="text-sm text-neutral-600 leading-relaxed mb-6">
-                Are you sure you want to cancel this {cancellingRes.isApproved ? 'booking' : 'reservation'}? The ₱1,000 holding deposit will be refunded to your source payment account.
+                Are you sure you want to cancel this {cancellingRes.isApproved ? 'booking' : 'reservation'}? The â‚±1,000 holding deposit will be refunded to your source payment account.
               </p>
 
               {/* Actions */}
@@ -2262,6 +2267,11 @@ export default function Profile() {
         images={galleryImages}
         initialIndex={0}
         onClose={() => setIsPhotoGalleryOpen(false)}
+      />
+
+      <AnnouncementsOverlay 
+        isOpen={isAnnouncementsOpen} 
+        onClose={() => setIsAnnouncementsOpen(false)} 
       />
     </div>
   );

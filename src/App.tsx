@@ -1,9 +1,22 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { Suspense, lazy } from 'react';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { MotionConfig } from 'motion/react';
 import { ThemeProvider } from './lib/ThemeContext';
 import { AuthProvider } from './lib/AuthContext';
 import { ToastProvider } from './components/ToastProvider';
+import ErrorBoundary from './components/errors/ErrorBoundary';
+import PageError from './components/ui/ErrorScreen';
+
+// Component to scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home'));
@@ -30,20 +43,23 @@ export default function App() {
         <ToastProvider>
           <MotionConfig reducedMotion="user">
             <Router>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/listing/:id" element={<ListingDetail />} />
-                  <Route path="/category/:categoryId" element={<CategoryListings />} />
-                  <Route path="/maps" element={<Maps />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/roommate" element={<RoommateFinder />} />
-                  <Route path="/roommate-finder" element={<RoommateFinder />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/manage-listings" element={<ManageListings />} />
-                  <Route path="/profile-setup" element={<ProfileSetup />} />
-                </Routes>
-              </Suspense>
+              <ScrollToTop />
+              <ErrorBoundary fallback={<PageError />}>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/listing/:id" element={<ListingDetail />} />
+                    <Route path="/category/:categoryId" element={<CategoryListings />} />
+                    <Route path="/maps" element={<Maps />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/roommate" element={<RoommateFinder />} />
+                    <Route path="/roommate-finder" element={<RoommateFinder />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/manage-listings" element={<ManageListings />} />
+                    <Route path="/profile-setup" element={<ProfileSetup />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </Router>
           </MotionConfig>
         </ToastProvider>

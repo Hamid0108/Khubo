@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import RoommateSearchDropdown from './RoommateSearchDropdown';
 import { Roommate } from '../types';
+import { AnnouncementsOverlay } from './AnnouncementsOverlay';
 
 interface RoommateHeroProps {
   searchQuery?: string;
@@ -35,6 +36,7 @@ export default function RoommateHero({
   const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState<'location' | 'budget' | 'general' | null>(null);
   const [hideDropdown, setHideDropdown] = useState(false);
+  const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
 
   useEffect(() => {
     if (suppressDropdown) {
@@ -90,7 +92,10 @@ export default function RoommateHero({
             />
           </button>
 
-          <button className="flex items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-transparent text-white hover:scale-105 active:scale-95 transition-transform">
+          <button 
+            onClick={() => setIsAnnouncementsOpen(true)}
+            className="flex items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-transparent text-white hover:scale-105 active:scale-95 transition-transform"
+          >
             <Megaphone className="w-5 h-5 md:w-8 md:h-8" />
           </button>
         </div>
@@ -343,6 +348,7 @@ export default function RoommateHero({
           </motion.div>
         </div>
       </div>
+      <AnnouncementsOverlay isOpen={isAnnouncementsOpen} onClose={() => setIsAnnouncementsOpen(false)} />
     </div>
   );
 }
