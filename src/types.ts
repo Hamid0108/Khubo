@@ -54,4 +54,5 @@ export interface Roommate {
   budgetRange: string;
   preferredPlace: string;
   userId?: string;
+  postMode?: 'applying' | 'finding';
 }

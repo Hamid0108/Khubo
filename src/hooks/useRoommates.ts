@@ -35,6 +35,7 @@ export function useRoommates() {
         budgetRange: item.budget_range,
         preferredPlace: item.preferred_place,
         userId: item.user_id,
+        postMode: item.post_mode || 'applying',
       }));
 
       setRoommates(mapped);

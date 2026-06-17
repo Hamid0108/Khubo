@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS public.roommates (
     image TEXT,
     tags TEXT[],
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    post_mode TEXT DEFAULT 'applying' CHECK (post_mode IN ('applying', 'finding')),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

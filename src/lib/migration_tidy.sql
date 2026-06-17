@@ -152,4 +152,7 @@ DROP TABLE IF EXISTS public.fyp_videos CASCADE;
 ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS barangay TEXT;
 ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS city TEXT;
 
+-- 9. Add post_mode column to roommates table if it does not exist
+ALTER TABLE public.roommates ADD COLUMN IF NOT EXISTS post_mode TEXT DEFAULT 'applying' CHECK (post_mode IN ('applying', 'finding'));
+
 

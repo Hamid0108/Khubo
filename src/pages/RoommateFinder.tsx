@@ -342,6 +342,14 @@ export default function RoommateFinder() {
     return result;
   }, [selectedTag, searchQuery, roommatesList, selectedLocation, selectedBudget]);
 
+  const findingRoommates = useMemo(() => {
+    return filteredRoommates.filter(r => r.postMode === 'finding');
+  }, [filteredRoommates]);
+
+  const applyingRoommates = useMemo(() => {
+    return filteredRoommates.filter(r => r.postMode === 'applying');
+  }, [filteredRoommates]);
+
   const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
     if (ref.current) {
       const scrollAmount = ref.current.clientWidth * 0.8;
@@ -733,7 +741,7 @@ export default function RoommateFinder() {
                     </div>
                   ))
                 ) : (
-                  filteredRoommates.slice(0, 10).map((roommate) => (
+                  findingRoommates.slice(0, 10).map((roommate) => (
                     <div key={roommate.id} className="flex-none snap-start w-full [@media(max-height:500px)_and_(orientation:landscape)]:w-[calc(50vw-24px)] sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]">
                       <RoommateCard roommate={roommate} onProfileClick={openProfile} />
                     </div>
@@ -782,7 +790,7 @@ export default function RoommateFinder() {
                     </div>
                   ))
                 ) : (
-                  filteredRoommates.slice().reverse().slice(0, 10).map((roommate) => (
+                  applyingRoommates.slice(0, 10).map((roommate) => (
                     <div key={roommate.id} className="flex-none snap-start w-full [@media(max-height:500px)_and_(orientation:landscape)]:w-[calc(50vw-24px)] sm:w-[320px] md:w-[340px] xl:w-[calc((100%-48px)/4)]">
                       <RoommateCard roommate={roommate} onProfileClick={openProfile} actionLabel="Accept as Roommate" />
                     </div>

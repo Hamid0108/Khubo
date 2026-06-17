@@ -12,7 +12,8 @@ export const ROOMMATES: Roommate[] = [
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Andrea67',
     tags: ['Non-smoker', 'Quiet', 'Clean'],
     budgetRange: 'P2500-P3000',
-    preferredPlace: "Nathan's Female Boarders"
+    preferredPlace: "Nathan's Female Boarders",
+    postMode: 'finding'
   },
   {
     id: 'rm2',
@@ -25,7 +26,8 @@ export const ROOMMATES: Roommate[] = [
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Irvin99',
     tags: ['Clean', 'Night owl', 'Introvert'],
     budgetRange: 'P2600-P2800',
-    preferredPlace: "Layla's Residences & Dormitory"
+    preferredPlace: "Layla's Residences & Dormitory",
+    postMode: 'applying'
   },
   {
     id: 'rm3',
@@ -38,7 +40,8 @@ export const ROOMMATES: Roommate[] = [
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex22',
     tags: ['Pet friendly', 'Morning person', 'Clean'],
     budgetRange: 'P2500-P3000',
-    preferredPlace: "Nathan's Female Boarders"
+    preferredPlace: "Nathan's Female Boarders",
+    postMode: 'finding'
   },
   {
     id: 'rm4',
@@ -51,7 +54,8 @@ export const ROOMMATES: Roommate[] = [
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SophiaReyes',
     tags: ['Outgoing', 'Studious', 'Clean'],
     budgetRange: 'P2000-P3500',
-    preferredPlace: "Green Residences"
+    preferredPlace: "Green Residences",
+    postMode: 'applying'
   },
   {
     id: 'rm5',
@@ -64,7 +68,8 @@ export const ROOMMATES: Roommate[] = [
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MarkSantos',
     tags: ['Gym goer', 'Tidy', 'Respectful'],
     budgetRange: 'P2500-P3000',
-    preferredPlace: "City Scape Dorms"
+    preferredPlace: "City Scape Dorms",
+    postMode: 'finding'
   },
   {
     id: 'rm6',
@@ -77,6 +82,7 @@ export const ROOMMATES: Roommate[] = [
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ElenaGomez',
     tags: ['Night owl', 'Quiet', 'Studious'],
     budgetRange: 'P3000-P4000',
-    preferredPlace: "Villa Maria Boarding House"
+    preferredPlace: "Villa Maria Boarding House",
+    postMode: 'finding'
   }
 ];

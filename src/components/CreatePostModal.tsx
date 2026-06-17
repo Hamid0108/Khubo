@@ -74,7 +74,8 @@ export default function CreatePostModal({ isOpen, onClose, postMode, onPostCreat
       tags: selectedTraits.length > 0 ? selectedTraits : ['Clean', 'Quiet'],
       budgetRange: profile?.budget_range || 'P2500-P3000',
       preferredPlace: postMode === 'finding' ? "Nathan's Female Boarders" : "Tibanga Boardhouse",
-      userId: user?.id || null
+      userId: user?.id || null,
+      postMode: postMode
     };
 
     // Save to Supabase table
@@ -91,7 +92,8 @@ export default function CreatePostModal({ isOpen, onClose, postMode, onPostCreat
         bio: newPost.bio,
         image: newPost.image,
         tags: newPost.tags,
-        user_id: user?.id || null
+        user_id: user?.id || null,
+        post_mode: postMode
       });
 
       if (error) {
