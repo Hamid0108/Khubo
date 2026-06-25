@@ -47,6 +47,15 @@ const mockSupabase: any = {
       getPublicUrl: (path: string) => ({ data: { publicUrl: path } }),
     }),
   },
+  channel: () => {
+    const ch = {
+      on: () => ch,
+      subscribe: () => ch,
+      unsubscribe: () => Promise.resolve(),
+    };
+    return ch;
+  },
+  removeChannel: () => {},
 };
 
 // Use real client if URL and Anon Key are configured in environment variables
