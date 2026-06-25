@@ -38,6 +38,7 @@ import { useToast } from '../components/ToastProvider';
 import { cn } from '../lib/utils';
 import { AuthModal } from '../components/AuthModal';
 import { AnnouncementsOverlay } from '../components/AnnouncementsOverlay';
+import { AnalyticsModal } from '../components/AnalyticsModal';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -97,6 +98,7 @@ export default function Profile() {
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [newTagInput, setNewTagInput] = useState('');
   const [selectedStatModal, setSelectedStatModal] = useState<string | null>(null);
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
 
   // Persistence helpers for profile fields
   const saveProfileData = async (updatedFields: any) => {
@@ -1171,12 +1173,16 @@ export default function Profile() {
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: i * 0.1 }}
                  onClick={() => {
-                   if (isLandlord) {
-                     setActiveTab(stat.tab as any);
-                   } else {
-                     setSelectedStatModal(stat.title);
-                   }
-                 }}
+                    if (isLandlord) {
+                      if (stat.title === 'Revenue') {
+                        setIsAnalyticsModalOpen(true);
+                      } else {
+                        setActiveTab(stat.tab as any);
+                      }
+                    } else {
+                      setSelectedStatModal(stat.title);
+                    }
+                  }}
                  className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 flex flex-col relative group cursor-pointer hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300"
                >
                  <div className="absolute top-5 right-5 md:top-6 md:right-6">
@@ -2272,6 +2278,11 @@ export default function Profile() {
       <AnnouncementsOverlay 
         isOpen={isAnnouncementsOpen} 
         onClose={() => setIsAnnouncementsOpen(false)} 
+      />
+
+      <AnalyticsModal 
+        isOpen={isAnalyticsModalOpen} 
+        onClose={() => setIsAnalyticsModalOpen(false)} 
       />
     </div>
   );

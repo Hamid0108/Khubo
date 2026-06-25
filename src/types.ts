@@ -1,3 +1,34 @@
+export interface Review {
+  id: string;
+  userName: string;
+  userImage: string;
+  date: string;
+  comment: string;
+  rating: number;
+}
+
+export interface HostInfo {
+  name: string;
+  image: string;
+  reviews: number;
+  rating: number;
+  hostingDuration: string;
+  work: string;
+  location: string;
+  tenantCount?: number;
+}
+
+export interface TenantInfo {
+  id: string;
+  name: string;
+  image: string;
+  email: string;
+  phone?: string;
+  moveInDate: string;
+  status: 'active' | 'leaving' | 'moved_out';
+  paymentStatus: 'paid' | 'pending' | 'overdue';
+}
+
 export interface Listing {
   id: string;
   title: string;
@@ -10,29 +41,16 @@ export interface Listing {
   category: string;
   date: string;
   amenities: string[];
+  advancePaymentMonths?: number;
   lat?: number;
   lng?: number;
   city?: string;
   barangay?: string;
   landlord_id?: string;
-  reviews: {
-    id: string;
-    userName: string;
-    userImage: string;
-    date: string;
-    comment: string;
-    rating: number;
-  }[];
-  host?: {
-    name: string;
-    image: string;
-    reviews: number;
-    rating: number;
-    hostingDuration: string;
-    work: string;
-    location: string;
-    tenantCount?: number;
-  };
+  reviews: Review[];
+  host?: HostInfo;
+  tenants?: TenantInfo[];
+  isActive?: boolean;
 }
 
 export interface Category {

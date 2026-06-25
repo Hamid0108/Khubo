@@ -4,7 +4,7 @@ import { X, Globe, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-export function AuthModal({ isOpen, onClose, onLogin }: { isOpen: boolean; onClose: () => void; onLogin?: () => void }) {
+export function AuthModal({ isOpen, onClose, onLogin, onSignUp }: { isOpen: boolean; onClose: () => void; onLogin?: () => void; onSignUp?: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,7 +67,11 @@ export function AuthModal({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
         if (isNew) {
           setIsNewUser(true);
           onClose();
-          navigate('/profile-setup');
+          if (onSignUp) {
+            onSignUp();
+          } else {
+            navigate('/profile-setup');
+          }
         }
       }
     } catch (err: any) {

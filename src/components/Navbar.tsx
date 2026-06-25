@@ -1,14 +1,25 @@
+// @context: Top navigation bar — logo, search, user menu, notifications
+// @purpose: Main navigation with logo link, "Khubo your home" CTA, notifications bell, user profile menu
+// @behavior: Click-outside to close user menu dropdown; AuthModal for unauthenticated users
+// @behavior: Notifications bell shows unread count and opens NotificationDialog via ToastProvider
+// @behavior: User menu shows profile link, notifications, and logout options
+// @dependencies: useAuth, useToast, AuthModal, CreateListingModal, react-router-dom, motion, lucide-react
+
 import { useState, useRef, useEffect } from 'react';
-import { Search, Globe, Menu, User, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Search, Globe, Menu, User, LogOut, Bell } from 'lucide-react';
+
 import { useAuth } from '../lib/AuthContext';
 import { AuthModal } from './AuthModal';
+import { OnboardingFlow } from './OnboardingFlow';
 import { CreateListingModal } from './CreateListingModal';
+import { useToast } from './ToastProvider';
 import { Link } from 'react-router-dom';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
+  const { showToast, openNotifications, notifications } = useToast();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isCreateListingOpen, setIsCreateListingOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,9 +69,7 @@ export default function Navbar() {
           </div>
 
           {/* Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div
             role="button"
             tabIndex={0}
             aria-label="Open search menu"
@@ -77,7 +86,7 @@ export default function Navbar() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* User Menu */}
           <div className="flex flex-row items-center gap-3 relative" ref={menuRef}>
@@ -90,6 +99,18 @@ export default function Navbar() {
             >
               Khubo your home
             </div>
+            <button
+              onClick={openNotifications}
+              aria-label="Notifications"
+              className="hidden sm:flex relative p-3 hover:bg-neutral-100 rounded-full transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17294F]"
+            >
+              <Bell size={18} />
+              {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-white">
+                  {notifications.length > 9 ? '9+' : notifications.length}
+                </span>
+              )}
+            </button>
             <div
               role="button"
               tabIndex={0}
@@ -114,13 +135,8 @@ export default function Navbar() {
             </div>
 
             {/* Dropdown Menu */}
-            <AnimatePresence>
-              {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
-                  animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
-                  exit={{ opacity: 0, clipPath: 'inset(0% 0% 100% 0%)' }}
-                  transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
+                {isMenuOpen && (
+                <div
                   className="absolute right-0 top-[60px] w-64 bg-white rounded-xl shadow-[0_2px_16px_rgba(0,0,0,0.12)] border border-[#ebebeb] py-2 z-50 overflow-hidden"
                 >
                   {user ? (
@@ -130,9 +146,6 @@ export default function Navbar() {
                         <p className="text-xs text-neutral-500 mt-0.5">Signed in</p>
                       </div>
                       <div className="py-2">
-                        <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-neutral-50 text-neutral-700 transition">
-                          Messages
-                        </button>
                         <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-neutral-50 text-neutral-700 transition">
                           Trips
                         </button>
@@ -196,9 +209,8 @@ export default function Navbar() {
                       </button>
                     </>
                   )}
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -206,12 +218,20 @@ export default function Navbar() {
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
+        onSignUp={() => setIsOnboardingOpen(true)}
+      />
+      <OnboardingFlow
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onComplete={() => {
+          showToast('Welcome to Khubo! Your profile has been created.');
+        }}
       />
       <CreateListingModal 
         isOpen={isCreateListingOpen}
         onClose={() => setIsCreateListingOpen(false)}
         onSuccess={() => {
-          alert('Listing created successfully!');
+          showToast('Listing created successfully!');
         }}
       />
     </header>

@@ -16,6 +16,7 @@ import { useRoommates } from '../hooks/useRoommates';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/AuthContext';
 import CreatePostModal from '../components/CreatePostModal';
+import { RoommatesPopup } from '../components/RoommatesPopup';
 
 const TAGS = [
   'ALL', 'Near MSU-IIT', 'All Female', 'Solo Room', 'Shared Room', 'All Male', 
@@ -122,6 +123,8 @@ export default function RoommateFinder() {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [postMode, setPostMode] = useState<'applying' | 'finding'>('applying');
   const [profile, setProfile] = useState<any>(null);
+  const [findingPopupOpen, setFindingPopupOpen] = useState(false);
+  const [applyingPopupOpen, setApplyingPopupOpen] = useState(false);
 
   React.useEffect(() => {
     try {
@@ -705,9 +708,12 @@ export default function RoommateFinder() {
           {/* Recommended Section */}
           <div className="flex flex-col gap-5 md:gap-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 group cursor-pointer min-w-0">
+              <div 
+                onClick={() => setFindingPopupOpen(true)}
+                className="flex items-center gap-2 group cursor-pointer min-w-0"
+              >
                 <h2 className="font-display font-extrabold text-xl sm:text-2xl md:text-3xl text-black whitespace-nowrap truncate">Finding Roommate</h2>
-                <div className="flex items-center gap-1 px-3 py-1 bg-[#17294F] text-white rounded-full ml-1 sm:ml-2 flex-shrink-0">
+                <div className="flex items-center gap-1 px-3 py-1 bg-[#17294F] hover:bg-[#1f376a] transition text-white rounded-full ml-1 sm:ml-2 flex-shrink-0">
                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">See more</span>
                 </div>
               </div>
@@ -754,9 +760,12 @@ export default function RoommateFinder() {
           {/* Near MSU-IIT Section */}
           <div className="flex flex-col gap-5 md:gap-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 group cursor-pointer min-w-0">
+              <div 
+                onClick={() => setApplyingPopupOpen(true)}
+                className="flex items-center gap-2 group cursor-pointer min-w-0"
+              >
                 <h2 className="font-display font-extrabold text-xl sm:text-2xl md:text-3xl text-black whitespace-nowrap truncate">Applying as Roommate</h2>
-                <div className="flex items-center gap-1 px-3 py-1 bg-[#17294F] text-white rounded-full ml-1 sm:ml-2 flex-shrink-0">
+                <div className="flex items-center gap-1 px-3 py-1 bg-[#17294F] hover:bg-[#1f376a] transition text-white rounded-full ml-1 sm:ml-2 flex-shrink-0">
                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">See more</span>
                 </div>
               </div>
@@ -832,6 +841,23 @@ export default function RoommateFinder() {
         onClose={() => setIsCreatePostOpen(false)} 
         postMode={postMode} 
         onPostCreated={() => refetchRoommates()} 
+      />
+
+      <RoommatesPopup
+        isOpen={findingPopupOpen}
+        onClose={() => setFindingPopupOpen(false)}
+        title="Finding Roommate"
+        roommates={findingRoommates}
+        onProfileClick={openProfile}
+      />
+
+      <RoommatesPopup
+        isOpen={applyingPopupOpen}
+        onClose={() => setApplyingPopupOpen(false)}
+        title="Applying as Roommate"
+        roommates={applyingRoommates}
+        onProfileClick={openProfile}
+        actionLabel="Accept as Roommate"
       />
     </div>
   );
