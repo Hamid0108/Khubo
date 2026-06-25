@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Star, Briefcase, Globe, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Star, Briefcase, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface HostProfileProps {
@@ -11,7 +11,6 @@ interface HostProfileProps {
   work: string;
   location: string;
   tenantCount: number;
-  onMessageClick?: () => void;
 }
 
 const HostProfile: React.FC<HostProfileProps> = ({
@@ -22,8 +21,7 @@ const HostProfile: React.FC<HostProfileProps> = ({
   hostingDuration,
   work,
   location,
-  tenantCount,
-  onMessageClick
+  tenantCount
 }) => {
   return (
     <div className="py-8 border-t border-neutral-100 mt-8">
@@ -109,16 +107,9 @@ const HostProfile: React.FC<HostProfileProps> = ({
 
           <div className="bg-[#17294F] rounded-2xl p-6 text-white relative overflow-hidden group max-w-lg">
             <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -translate-x-4 translate-y-4 group-hover:scale-150 transition-transform duration-700" />
-            <p className="text-xs font-medium leading-relaxed mb-4 opacity-80 relative z-10">
+            <p className="text-xs font-medium leading-relaxed opacity-80 relative z-10">
               "I take pride in providing a seamless luxury experience for my guests. From the moment you arrive until you check out, your comfort is my top priority."
             </p>
-            <button 
-              onClick={onMessageClick}
-              className="flex items-center gap-2 bg-white text-[#17294F] px-4 py-2.5 rounded-xl font-black uppercase text-[9px] tracking-widest hover:bg-blue-500 hover:text-white transition-all relative z-10 shadow-lg"
-            >
-              <MessageCircle size={14} className="fill-current/20" />
-              Message landlord
-            </button>
           </div>
         </div>
       </div>

@@ -97,53 +97,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4. Enable Supabase Realtime for messages and conversations tables
-DO $$
-BEGIN
-  BEGIN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Table public.messages is already in publication supabase_realtime';
-  END;
-
-  BEGIN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Table public.conversations is already in publication supabase_realtime';
-  END;
-END $$;
-
--- 5. Add last_sender_id to conversations table and create auto-increment trigger for unread_count
-ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS last_sender_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
-
-CREATE OR REPLACE FUNCTION public.handle_new_message()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE public.conversations
-    SET 
-        last_message = NEW.text,
-        last_message_time = NEW.timestamp,
-        last_sender_id = NEW.sender_id,
-        unread_count = CASE 
-            WHEN unread_count IS NULL THEN 1 
-            ELSE unread_count + 1 
-        END
-    WHERE id = NEW.conversation_id;
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Safe trigger creation
-DROP TRIGGER IF EXISTS on_message_created ON public.messages;
-CREATE TRIGGER on_message_created
-    AFTER INSERT ON public.messages
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_message();
-
--- 6. Add status to conversations table if it does not exist
-ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+-- Realtime publication for messages and conversations tables has been removed.
 
 -- 7. Drop the FYP videos table completely
 DROP TABLE IF EXISTS public.fyp_videos CASCADE;

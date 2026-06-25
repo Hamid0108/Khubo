@@ -12,7 +12,7 @@ import PageError from './components/ui/ErrorScreen';
 const Home = lazy(() => import('./pages/Home'));
 const ListingDetail = lazy(() => import('./pages/ListingDetail'));
 const CategoryListings = lazy(() => import('./pages/CategoryListings'));
-const Messages = lazy(() => import('./pages/Messages'));
+
 const Maps = lazy(() => import('./pages/Maps'));
 const RoommateFinder = lazy(() => import('./pages/RoommateFinder'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -56,7 +56,7 @@ export default function App() {
                       <Route path="/listing/:id" element={<ListingDetail />} />
                       <Route path="/category/:categoryId" element={<CategoryListings />} />
                       <Route path="/maps" element={<Maps />} />
-                      <Route path="/messages" element={<Messages />} />
+
                       <Route path="/roommate" element={<RoommateFinder />} />
                       <Route path="/roommate-finder" element={<RoommateFinder />} />
                       <Route path="/profile" element={<Profile />} />

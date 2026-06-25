@@ -96,30 +96,7 @@ CREATE TABLE IF NOT EXISTS public.reservations (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Conversations Table (Chat threads)
-CREATE TABLE IF NOT EXISTS public.conversations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-    receiver_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-    sender_name TEXT,
-    receiver_name TEXT,
-    last_message TEXT,
-    last_message_time TIMESTAMPTZ DEFAULT NOW(),
-    last_sender_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    unread_count INT DEFAULT 0,
-    status TEXT DEFAULT 'active',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
 
--- Messages Table (Individual messages in chats)
-CREATE TABLE IF NOT EXISTS public.messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    conversation_id UUID REFERENCES public.conversations(id) ON DELETE CASCADE,
-    sender_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    text TEXT NOT NULL,
-    timestamp TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
 
 
 
@@ -130,8 +107,7 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.roommates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
 
 
 -- =========================================================================
@@ -168,18 +144,7 @@ CREATE POLICY "Anyone can insert reservations" ON public.reservations
 CREATE POLICY "Anyone can update reservations" ON public.reservations 
     FOR UPDATE USING (true);
 
--- Chats and Messages: Users can see chats they participate in
-CREATE POLICY "Anyone can view conversations" ON public.conversations 
-    FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert conversations" ON public.conversations 
-    FOR INSERT WITH CHECK (true);
-CREATE POLICY "Anyone can update conversations" ON public.conversations 
-    FOR UPDATE USING (true);
 
-CREATE POLICY "Anyone can view messages" ON public.messages 
-    FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert messages" ON public.messages 
-    FOR INSERT WITH CHECK (true);
 
 
 
@@ -523,44 +488,4 @@ VALUES
 
 
 
--- Enable Supabase Realtime for messages and conversations tables
-DO $$
-BEGIN
-  BEGIN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Table public.messages is already in publication supabase_realtime';
-  END;
 
-  BEGIN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Table public.conversations is already in publication supabase_realtime';
-  END;
-END $$;
-
--- Create auto-increment trigger for conversations unread_count and message preview updates
-CREATE OR REPLACE FUNCTION public.handle_new_message()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE public.conversations
-    SET 
-        last_message = NEW.text,
-        last_message_time = NEW.timestamp,
-        last_sender_id = NEW.sender_id,
-        unread_count = CASE 
-            WHEN unread_count IS NULL THEN 1 
-            ELSE unread_count + 1 
-        END
-    WHERE id = NEW.conversation_id;
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP TRIGGER IF EXISTS on_message_created ON public.messages;
-CREATE TRIGGER on_message_created
-    AFTER INSERT ON public.messages
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_message();

@@ -3,7 +3,7 @@ import Categories from '../components/Categories';
 import ListingCard from '../components/ListingCard';
 import ListingCardSkeleton from '../components/ListingCardSkeleton';
 import BottomNav from '../components/BottomNav';
-import Filters, { FilterState } from '../components/Filters';
+import { FilterState } from '../components/Filters';
 import Footer from '../components/Footer';
 import { useListings } from '../hooks/useListings';
 import { motion, AnimatePresence } from 'motion/react';
@@ -639,9 +639,7 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div className="hidden md:flex flex-1 justify-end pl-2 sm:pl-4 min-w-0">
-                  <Filters currentFilters={filters} onFilterChange={setFilters} />
-                </div>
+                <div className="hidden md:flex flex-1 justify-end pl-2 sm:pl-4 min-w-0" />
               </motion.div>
             ) : (
               <motion.div 
@@ -654,9 +652,6 @@ export default function Home() {
               >
                 <div className="flex-1 min-w-0 relative group/cat pl-2 sm:pl-0">
                   <Categories selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
-                </div>
-                <div className="pl-1 sm:pl-4 pr-2 sm:pr-0">
-                  <Filters currentFilters={filters} onFilterChange={setFilters} />
                 </div>
               </motion.div>
             )}

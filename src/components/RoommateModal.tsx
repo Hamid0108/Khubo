@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, GraduationCap, Wallet, Heart, MessageSquare, ShieldCheck, Instagram, Twitter, Facebook, Star, User, Zap, Sparkles } from 'lucide-react';
+import { X, MapPin, GraduationCap, Wallet, ShieldCheck, Instagram, Twitter, Facebook, Star, User, Zap, Sparkles } from 'lucide-react';
 import { Roommate } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
-import { supabase } from '../lib/supabaseClient';
 
 interface RoommateModalProps {
   roommate: Roommate | null;
@@ -15,16 +14,6 @@ interface RoommateModalProps {
 export default function RoommateModal({ roommate, isOpen, onClose }: RoommateModalProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [isApplying, setIsApplying] = useState(false);
-  const [introText, setIntroText] = useState('');
-
-  useEffect(() => {
-    if (isOpen && roommate) {
-      setIsApplying(false);
-      setIntroText(`Hi ${roommate.name}! I saw your roommate finder profile for ${roommate.preferredPlace} and I'm interested in applying to share space with you. Let's chat!`);
-    }
-  }, [isOpen, roommate]);
-
   if (!roommate) return null;
 
   return (
@@ -153,155 +142,6 @@ export default function RoommateModal({ roommate, isOpen, onClose }: RoommateMod
                         <Facebook size={20} className="text-neutral-300 hover:text-blue-600 transition-colors cursor-pointer" />
                       </div>
                     </div>
-
-                    {isApplying ? (
-                      <div className="w-full flex flex-col gap-3 text-left">
-                        <textarea
-                          value={introText}
-                          onChange={(e) => setIntroText(e.target.value)}
-                          required
-                          rows={3}
-                          className="w-full p-4 border border-neutral-300 rounded-2xl outline-none focus:ring-2 focus:ring-[#17294F] transition-all resize-none text-xs font-semibold"
-                        />
-                        <div className="flex gap-2">
-                          <button 
-                            type="button"
-                            onClick={() => setIsApplying(false)}
-                            className="flex-1 py-3 border border-neutral-300 rounded-xl text-xs font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 active:scale-95 cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={async () => {
-                              if (!introText.trim()) return;
-                              
-                              const targetUserId = roommate.userId;
-                              const isUUID = targetUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetUserId);
-
-                              if (user && isUUID) {
-                                try {
-                                  const { data: existingConvs } = await supabase
-                                    .from('conversations')
-                                    .select('*')
-                                    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
-                                  
-                                  const existing = existingConvs?.find(
-                                    c => (c.sender_id === user.id && c.receiver_id === targetUserId) ||
-                                         (c.sender_id === targetUserId && c.receiver_id === user.id)
-                                  );
-
-                                  if (existing) {
-                                    await supabase.from('messages').insert({
-                                      conversation_id: existing.id,
-                                      sender_id: user.id,
-                                      text: introText
-                                    });
-                                    await supabase
-                                      .from('conversations')
-                                      .update({
-                                        last_message: introText,
-                                        last_message_time: new Date().toISOString()
-                                      })
-                                      .eq('id', existing.id);
-                                  } else {
-                                    // Fetch roommate profile
-                                    const { data: roommateProfile } = await supabase
-                                      .from('profiles')
-                                      .select('full_name, nickname')
-                                      .eq('id', targetUserId)
-                                      .single();
-
-                                    const receiverName = roommateProfile?.nickname || roommateProfile?.full_name || roommate.name || 'Roommate';
-
-                                    // Fetch user profile
-                                    const { data: myProfile } = await supabase
-                                      .from('profiles')
-                                      .select('full_name, nickname')
-                                      .eq('id', user.id)
-                                      .single();
-
-                                    const senderName = myProfile?.nickname || myProfile?.full_name || user.email?.split('@')[0] || 'User';
-
-                                    const { data: newConv } = await supabase
-                                      .from('conversations')
-                                      .insert({
-                                        sender_id: user.id,
-                                        receiver_id: targetUserId,
-                                        sender_name: senderName,
-                                        receiver_name: receiverName,
-                                        last_message: introText,
-                                        last_message_time: new Date().toISOString()
-                                      })
-                                      .select()
-                                      .single();
-
-                                    if (newConv) {
-                                      await supabase.from('messages').insert({
-                                        conversation_id: newConv.id,
-                                        sender_id: user.id,
-                                        text: introText
-                                      });
-                                    }
-                                  }
-                                } catch (err) {
-                                  console.error('Supabase chat initiation error:', err);
-                                } finally {
-                                  onClose();
-                                  navigate('/messages');
-                                }
-                              } else {
-                                // Save conversation
-                                const newChat = {
-                                  id: roommate.id,
-                                  name: roommate.name,
-                                  avatar: roommate.image,
-                                  lastMessage: introText,
-                                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                                  unread: 0,
-                                  online: true,
-                                  role: 'Roommate'
-                                };
-                                const chatsStr = localStorage.getItem('khubo_conversations');
-                                const chats = chatsStr ? JSON.parse(chatsStr) : [];
-                                // Prepend if not exists
-                                if (!chats.some((c: any) => c.id === roommate.id)) {
-                                  localStorage.setItem('khubo_conversations', JSON.stringify([newChat, ...chats]));
-                                }
-                                
-                                // Save message to message history
-                                const newMsg = {
-                                  id: Date.now().toString(),
-                                  text: introText,
-                                  sender: 'me',
-                                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                };
-                                localStorage.setItem(`khubo_messages_${roommate.id}`, JSON.stringify([newMsg]));
-
-                                onClose();
-                                navigate('/messages');
-                              }
-                            }}
-                            className="flex-[2] py-3 bg-[#17294F] text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#1e3466] active:scale-95 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                          >
-                            Send & Chat <MessageSquare size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2.5 w-full md:w-auto">
-                        <button className="flex-1 md:flex-none h-14 w-14 flex items-center justify-center border-2 border-neutral-100 rounded-2xl text-neutral-400 hover:text-red-500 hover:border-red-500 transition-all active:scale-90">
-                          <Heart size={20} />
-                        </button>
-                        <button 
-                          onClick={() => setIsApplying(true)}
-                          className="flex-[3] md:flex-none h-14 px-8 bg-[#17294F] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-[#1e325c] transition-all active:scale-95 flex items-center justify-center gap-2.5 cursor-pointer"
-                        >
-                          <MessageSquare size={16} />
-                          Apply as Roommate
-                        </button>
-                      </div>
-                    )}
                   </section>
 
                 </div>

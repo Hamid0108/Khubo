@@ -156,8 +156,6 @@ export default function Profile() {
   const [savedListings, setSavedListings] = useState<any[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [myRoommatePosts, setMyRoommatePosts] = useState<any[]>([]);
-  const [sentRoommateConvs, setSentRoommateConvs] = useState<any[]>([]);
-  const [receivedRoommateConvs, setReceivedRoommateConvs] = useState<any[]>([]);
   const [loadingRoommates, setLoadingRoommates] = useState(false);
 
   // Landlord Dashboard specific state variables
@@ -190,8 +188,7 @@ export default function Profile() {
   // Tenant stats
   const savedCount = savedListings.length;
   const activeReservationsCount = reservations.filter(r => r.status === 'Active' || r.status === 'Approved').length;
-  const roommateCount = myRoommatePosts.length + sentRoommateConvs.length;
-  const invitationCount = receivedRoommateConvs.length;
+  const roommateCount = myRoommatePosts.length;
 
   const handleAcceptReservation = async (id: string) => {
     try {
@@ -258,33 +255,7 @@ export default function Profile() {
     }
   };
 
-  const handleMessageTenant = (tenantName: string) => {
-    const savedChatsStr = localStorage.getItem('khubo_conversations');
-    const savedChats = savedChatsStr ? JSON.parse(savedChatsStr) : [];
-    
-    const existing = savedChats.find((c: any) => c.name === tenantName);
-    if (!existing) {
-      const newConv = {
-        id: 'conv_tenant_' + tenantName.replace(/\s+/g, '_').toLowerCase(),
-        name: tenantName,
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop',
-        lastMessage: 'Hi! Let\'s coordinate your move-in details.',
-        time: 'Just now',
-        unread: 0,
-        online: true,
-        role: 'Roommate'
-      };
-      
-      const msgKey = `khubo_messages_${newConv.id}`;
-      const initialMsgs = [
-        { id: '1', text: `Hi ${tenantName}, I've approved your reservation request. Let's coordinate your move-in details.`, sender: 'me', time: 'Just now' }
-      ];
-      localStorage.setItem(msgKey, JSON.stringify(initialMsgs));
-      localStorage.setItem('khubo_conversations', JSON.stringify([newConv, ...savedChats]));
-    }
-    
-    navigate('/messages');
-  };
+
   
   const handleOpenGallery = (listing: Listing | null, fallbackSrc: string = '') => {
     const fallbackImages = [
@@ -488,59 +459,9 @@ export default function Profile() {
         setMyRoommatePosts(roommatePosts || []);
       }
 
-      // Roommate conversations
-      const { data: convs, error: convsErr } = await supabase
-        .from('conversations')
-        .select(`
-          *,
-          sender:sender_id(role, avatar_url, nickname, full_name),
-          receiver:receiver_id(role, avatar_url, nickname, full_name)
-        `)
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
-
-      if (convsErr) {
-        console.error("Error fetching conversations:", convsErr);
-        setSentRoommateConvs([]);
-        setReceivedRoommateConvs([]);
-      } else {
-        const roommateConvs = (convs || []).map((c: any) => {
-          const isReceiver = c.receiver_id === user?.id;
-          const otherProfile = isReceiver ? c.sender : c.receiver;
-          const fallbackName = isReceiver ? c.sender_name : c.receiver_name;
-          const otherName = otherProfile?.nickname || otherProfile?.full_name || fallbackName;
-          const otherRole = otherProfile?.role 
-            ? (otherProfile.role === 'landlord' ? 'Landlord' : 'Roommate') 
-            : (otherName?.toLowerCase().includes('landlord') ? 'Landlord' : 'Roommate');
-          const otherAvatar = otherProfile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.id}`;
-
-          return {
-            id: c.id,
-            name: otherName || 'Unknown',
-            avatar: otherAvatar,
-            lastMessage: c.last_message || '',
-            time: c.last_message_time
-              ? new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : '',
-            unread: c.last_sender_id === user.id ? 0 : (c.unread_count || 0),
-            role: otherRole,
-            senderId: c.sender_id,
-            receiverId: c.receiver_id,
-            status: c.status || localStorage.getItem(`khubo_matched_${c.id}`) || 'active'
-          };
-        }).filter(c => c.role === 'Roommate');
-
-        // Split into sent & received
-        const sent = roommateConvs.filter(c => c.senderId === user.id);
-        const received = roommateConvs.filter(c => c.receiverId === user.id);
-
-        setSentRoommateConvs(sent);
-        setReceivedRoommateConvs(received);
-      }
     } catch (err) {
       console.error(err);
       setMyRoommatePosts([]);
-      setSentRoommateConvs([]);
-      setReceivedRoommateConvs([]);
     } finally {
       setLoadingRoommates(false);
     }
@@ -586,206 +507,6 @@ export default function Profile() {
       showToast(`Error: ${err.message || err}`);
     } finally {
       setCancellingRes(null);
-    }
-  };
-
-  const handleContactLandlord = async (landlordId: string, listingTitle: string) => {
-    if (!user) return;
-    
-    const isUUID = landlordId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(landlordId);
-    
-    if (isUUID) {
-      showToast('Initiating conversation with landlord...');
-      let targetId: string | null = null;
-      try {
-        const prefilledText = `Hi! I am writing to inquire regarding my reservation for "${listingTitle}".`;
-        
-        const { data: existingConvs } = await supabase
-          .from('conversations')
-          .select('*')
-          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
-
-        const existing = existingConvs?.find(
-          c => (c.sender_id === user.id && c.receiver_id === landlordId) ||
-               (c.sender_id === landlordId && c.receiver_id === user.id)
-        );
-
-        if (existing) {
-          targetId = existing.id;
-          await supabase.from('messages').insert({
-            conversation_id: existing.id,
-            sender_id: user.id,
-            text: prefilledText
-          });
-          await supabase
-            .from('conversations')
-            .update({
-              last_message: prefilledText,
-              last_message_time: new Date().toISOString()
-            })
-            .eq('id', existing.id);
-        } else {
-          const { data: landlordProfile } = await supabase
-            .from('profiles')
-            .select('full_name, nickname')
-            .eq('id', landlordId)
-            .single();
-          
-          const receiverName = landlordProfile?.nickname || landlordProfile?.full_name || 'Landlord';
-
-          const { data: myProfile } = await supabase
-            .from('profiles')
-            .select('full_name, nickname')
-            .eq('id', user.id)
-            .single();
-
-          const senderName = myProfile?.nickname || myProfile?.full_name || user.email?.split('@')[0] || 'User';
-
-          const { data: newConv } = await supabase
-            .from('conversations')
-            .insert({
-              sender_id: user.id,
-              receiver_id: landlordId,
-              sender_name: senderName,
-              receiver_name: receiverName,
-              last_message: prefilledText,
-              last_message_time: new Date().toISOString()
-            })
-            .select()
-            .single();
-
-          if (newConv) {
-            targetId = newConv.id;
-            await supabase.from('messages').insert({
-              conversation_id: newConv.id,
-              sender_id: user.id,
-              text: prefilledText
-            });
-          }
-        }
-      } catch (err) {
-        console.error('Supabase landlord contact error:', err);
-      } finally {
-        setSelectedStatModal(null);
-        if (targetId) {
-          navigate(`/messages?id=${targetId}`);
-        } else {
-          navigate('/messages');
-        }
-      }
-    } else {
-      const hostId = `host_${landlordId || 'unknown'}`;
-      const prefilledText = `Hi! I am writing to inquire regarding my reservation for "${listingTitle}".`;
-      
-      const newChat = {
-        id: hostId,
-        name: 'Landlord',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${hostId}`,
-        lastMessage: prefilledText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        unread: 0,
-        online: true,
-        role: 'Landlord'
-      };
-      
-      const chatsStr = localStorage.getItem('khubo_conversations');
-      const chats = chatsStr ? JSON.parse(chatsStr) : [];
-      
-      if (!chats.some((c: any) => c.id === hostId)) {
-        localStorage.setItem('khubo_conversations', JSON.stringify([newChat, ...chats]));
-      }
-      
-      const newMsg = {
-        id: Date.now().toString(),
-        text: prefilledText,
-        sender: 'me',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      localStorage.setItem(`khubo_messages_${hostId}`, JSON.stringify([newMsg]));
-      
-      showToast('Initiating conversation with host...');
-      setSelectedStatModal(null);
-      setTimeout(() => {
-        navigate(`/messages?id=${hostId}`);
-      }, 1000);
-    }
-  };
-
-  const handleAcceptRoommateInvitation = async (conv: any) => {
-    if (!user) return;
-    try {
-      const systemText = `ðŸ‘‹ Match confirmed! Roommate invitation accepted. You and ${conv.name} are now connected. Start coordinating your co-living plans!`;
-      
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(conv.id);
-
-      if (isUUID) {
-        const { error: msgErr } = await supabase.from('messages').insert({
-          conversation_id: conv.id,
-          sender_id: user.id,
-          text: systemText
-        });
-
-        if (msgErr) throw msgErr;
-
-        let convErr;
-        try {
-          const { error } = await supabase
-            .from('conversations')
-            .update({
-              last_message: systemText,
-              last_message_time: new Date().toISOString(),
-              status: 'accepted'
-            })
-            .eq('id', conv.id);
-          convErr = error;
-        } catch (err) {
-          convErr = err;
-        }
-
-        if (convErr) {
-          console.warn("DB status column might be missing. Attempting fallback update.", convErr);
-          const { error: fallbackErr } = await supabase
-            .from('conversations')
-            .update({
-              last_message: systemText,
-              last_message_time: new Date().toISOString()
-            })
-            .eq('id', conv.id);
-          if (fallbackErr) throw fallbackErr;
-        }
-
-        // Keep local storage synced as fallback/offline safety
-        localStorage.setItem(`khubo_matched_${conv.id}`, 'accepted');
-      } else {
-        // Fallback for localStorage
-        const key = `khubo_messages_${conv.id}`;
-        const savedMsgsStr = localStorage.getItem(key);
-        const savedMsgs = savedMsgsStr ? JSON.parse(savedMsgsStr) : [];
-        const newMsg = {
-          id: Date.now().toString(),
-          text: systemText,
-          sender: 'me',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        localStorage.setItem(key, JSON.stringify([...savedMsgs, newMsg]));
-
-        const savedChatsStr = localStorage.getItem('khubo_conversations');
-        if (savedChatsStr) {
-          const chats = JSON.parse(savedChatsStr);
-          const idx = chats.findIndex((c: any) => c.id === conv.id);
-          if (idx !== -1) {
-            chats[idx].lastMessage = newMsg.text;
-            chats[idx].time = 'Just now';
-            localStorage.setItem('khubo_conversations', JSON.stringify(chats));
-          }
-        }
-      }
-
-      showToast(`Match confirmed with ${conv.name}! ðŸŽ‰`);
-      fetchProfileStatsData();
-    } catch (err) {
-      console.error("Error accepting roommate invitation:", err);
-      showToast("Failed to accept invitation.");
     }
   };
 
@@ -863,7 +584,7 @@ export default function Profile() {
       setHasLandlordAccount(true);
       setIsLandlord(true);
       setShowSignupModal(false);
-      showToast(isLandlordLogin ? "Logged in to Landlord dashboard! ðŸ " : "Registered landlord account successfully! ðŸŽ‰");
+      showToast(isLandlordLogin ? "Logged in to Landlord dashboard! 🏠" : "Registered landlord account successfully! 🎉");
     } catch (err: any) {
       showToast(`Error: ${err.message || err}`);
     } finally {
@@ -1121,7 +842,7 @@ export default function Profile() {
               onClick={() => navigate('/profile-setup')}
               className="shrink-0 px-4 py-2 bg-[#2252D6] text-white text-xs font-bold rounded-xl hover:bg-[#1b43b3] transition-all active:scale-95 whitespace-nowrap"
             >
-              Set Up â†’
+              Set Up →
             </button>
           </motion.div>
         )}
@@ -1155,17 +876,16 @@ export default function Profile() {
 
         {/* 4 Stat Cards - Shown on overview tab or when in tenant mode */}
         {(!isLandlord || activeTab === 'overview') && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 drop-shadow-sm">
+          <div className={`grid grid-cols-2 ${isLandlord ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 md:gap-6 drop-shadow-sm`}>
              {(isLandlord ? [
                { title: 'Properties', count: propertiesCount.toString(), sub: 'Listed', tab: 'properties' },
                { title: 'Tenants', count: tenantsCount.toString(), sub: 'Active', tab: 'tenants' },
                { title: 'Reservations', count: pendingCount.toString(), sub: 'Pending', tab: 'reservations' },
-               { title: 'Revenue', count: `â‚±${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Earnings', tab: 'overview' }
+               { title: 'Revenue', count: `₱${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Earnings', tab: 'overview' }
              ] : [
                { title: 'Saved', count: savedCount.toString(), sub: 'Houses', tab: 'overview' },
                { title: 'Reservation', count: activeReservationsCount.toString(), sub: 'Active', tab: 'overview' },
-               { title: 'Roommate', count: roommateCount.toString(), sub: 'Applications', tab: 'overview' },
-               { title: 'Invitation', count: invitationCount.toString(), sub: 'Received', tab: 'overview' }
+               { title: 'Roommate', count: roommateCount.toString(), sub: 'Posts', tab: 'overview' }
              ]).map((stat, i) => (
                <motion.div 
                  key={stat.title}
@@ -1247,20 +967,20 @@ export default function Profile() {
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-neutral-500">Holding Deposits (â‚±1,000 / tenant)</span>
-                      <span className="font-bold text-neutral-950">â‚±{(tenantsCount * 1000).toLocaleString()}</span>
+                      <span className="text-neutral-500">Holding Deposits (₱1,000 / tenant)</span>
+                      <span className="font-bold text-neutral-950">₱{(tenantsCount * 1000).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-neutral-500">Advance Rents (1 Month Approved)</span>
-                      <span className="font-bold text-neutral-950">â‚±{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
+                      <span className="font-bold text-neutral-950">₱{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-neutral-500">Security Deposits (1 Month Approved)</span>
-                      <span className="font-bold text-neutral-950">â‚±{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
+                      <span className="font-bold text-neutral-950">₱{approvedReservations.reduce((sum, r) => sum + r.price, 0).toLocaleString()}</span>
                     </div>
                     <div className="border-t border-neutral-100 pt-4 mt-2 flex justify-between items-center text-[#17294F]">
                       <span className="font-black text-xs uppercase tracking-wider">Gross Revenue</span>
-                      <span className="font-black text-xl">â‚±{(totalRevenue * 2).toLocaleString()}</span>
+                      <span className="font-black text-xl">₱{(totalRevenue * 2).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -1299,7 +1019,7 @@ export default function Profile() {
                       
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-t border-neutral-50 pt-3 mt-2">
                         <div className="flex items-baseline gap-1">
-                          <span className="text-xl font-black text-black">â‚±{res.price.toLocaleString()}</span>
+                          <span className="text-xl font-black text-black">₱{res.price.toLocaleString()}</span>
                           <span className="text-[10px] text-neutral-400 font-bold uppercase">/month</span>
                         </div>
                         <div className="flex gap-2.5 w-full sm:w-auto">
@@ -1361,7 +1081,7 @@ export default function Profile() {
                           <div className="flex justify-between items-center py-1">
                             <div className="flex flex-col">
                               <span className="text-xs font-extrabold text-neutral-950">Room 1 (Single Bed)</span>
-                              <span className="text-[10px] text-neutral-400 mt-0.5">â‚±{listing.price.toLocaleString()}/mo</span>
+                              <span className="text-[10px] text-neutral-400 mt-0.5">₱{listing.price.toLocaleString()}/mo</span>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={cn(
@@ -1386,7 +1106,7 @@ export default function Profile() {
                           <div className="flex justify-between items-center py-1 border-t border-neutral-50 pt-2">
                             <div className="flex flex-col">
                               <span className="text-xs font-extrabold text-neutral-950">Room 2 (Double Bed)</span>
-                              <span className="text-[10px] text-neutral-400 mt-0.5">â‚±{Math.round(listing.price * 1.25).toLocaleString()}/mo</span>
+                              <span className="text-[10px] text-neutral-400 mt-0.5">₱{Math.round(listing.price * 1.25).toLocaleString()}/mo</span>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={cn(
@@ -1443,16 +1163,10 @@ export default function Profile() {
                             </td>
                             <td className="py-4 px-6 truncate max-w-[150px]">{res.listingTitle}</td>
                             <td className="py-4 px-6 font-medium text-[10px] text-neutral-500 uppercase tracking-wide">{res.roomName}</td>
-                            <td className="py-4 px-6 font-bold text-neutral-950">â‚±{res.price.toLocaleString()}</td>
+                            <td className="py-4 px-6 font-bold text-neutral-950">₱{res.price.toLocaleString()}</td>
                             <td className="py-4 px-6 font-mono text-neutral-500">{res.moveInDate}</td>
                             <td className="py-4 px-6 text-center">
                               <div className="flex items-center justify-center gap-2">
-                                <button 
-                                  onClick={() => handleMessageTenant(res.tenantName || 'Micheal B. Jordan')}
-                                  className="px-3.5 py-1.5 bg-[#17294F] hover:bg-[#1e3466] text-white rounded-lg font-bold text-[10px] uppercase tracking-wider active:scale-95 transition cursor-pointer"
-                                >
-                                  Message
-                                </button>
                                 <button 
                                   onClick={() => showToast(`Invoice slip ${res.id} generated & sent to ${res.tenantEmail}`)}
                                   className="px-3.5 py-1.5 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-lg font-bold text-[10px] uppercase tracking-wider active:scale-95 transition cursor-pointer"
@@ -1514,7 +1228,7 @@ export default function Profile() {
                           
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-t border-neutral-50 pt-3 mt-2">
                             <div className="flex items-baseline gap-1">
-                              <span className="text-xl font-black text-black">â‚±{listing.price.toLocaleString()}</span>
+                              <span className="text-xl font-black text-black">₱{listing.price.toLocaleString()}</span>
                               <span className="text-[10px] text-neutral-400 font-bold">/month</span>
                             </div>
                             <div className="flex gap-2.5 w-full sm:w-auto">
@@ -1600,7 +1314,7 @@ export default function Profile() {
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-8 md:mt-0 pt-4 border-t border-neutral-50">
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl md:text-[28px] font-black text-black">â‚±{res.price.toLocaleString()}</span>
+                        <span className="text-2xl md:text-[28px] font-black text-black">₱{res.price.toLocaleString()}</span>
                         <span className="text-sm md:text-base font-medium text-neutral-500">/month</span>
                       </div>
                     </div>
@@ -1613,12 +1327,7 @@ export default function Profile() {
                           >
                             {res.status === 'Approved' ? 'Cancel Booking' : 'Cancel Reservation'}
                           </button>
-                          <button 
-                            onClick={() => handleContactLandlord(res.landlordId, res.listingTitle)}
-                            className="flex-1 md:flex-none px-8 py-3 bg-[#17294F] text-white rounded-full font-bold hover:bg-[#1e3466] shadow-lg shadow-[#17294F]/20 transition active:scale-95 text-xs md:text-sm whitespace-nowrap cursor-pointer animate-none"
-                          >
-                            Contact Landlord
-                          </button>
+
                         </>
                       ) : (
                         <div className="text-xs text-neutral-400 font-bold uppercase tracking-wider py-2">
@@ -1908,8 +1617,8 @@ export default function Profile() {
                           <h4 className="font-bold text-neutral-900 text-sm truncate">{listing.title}</h4>
                           <p className="text-xs text-neutral-500 truncate">{listing.location}</p>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-black text-black text-xs">â‚±{listing.price.toLocaleString()}/mo</span>
-                            <span className="text-[10px] text-neutral-400 font-bold">â˜… {listing.rating || '5.0'}</span>
+                            <span className="font-black text-black text-xs">₱{listing.price.toLocaleString()}/mo</span>
+                            <span className="text-[10px] text-neutral-400 font-bold">★ {listing.rating || '5.0'}</span>
                           </div>
                         </div>
                       </div>
@@ -1950,16 +1659,9 @@ export default function Profile() {
                         <div className="flex justify-between items-end text-xs mt-3 border-t border-neutral-100/50 pt-2">
                           <div>
                             <p className="text-neutral-500 font-medium">Move-in: <span className="font-bold text-neutral-800">{res.moveInDate}</span></p>
-                            <p className="font-black text-black mt-0.5">â‚±{res.price.toLocaleString()}/mo</p>
+                            <p className="font-black text-black mt-0.5">₱{res.price.toLocaleString()}/mo</p>
                           </div>
-                          {(res.status === 'Active' || res.status === 'Approved') && (
-                            <button 
-                              onClick={() => handleContactLandlord(res.landlordId, res.listingTitle)}
-                              className="px-3.5 py-1.5 bg-[#17294F] text-white rounded-lg font-bold text-[10px] uppercase tracking-wider active:scale-95 transition cursor-pointer"
-                            >
-                              Contact
-                            </button>
-                          )}
+
                         </div>
                       </div>
                     ))}
@@ -2002,99 +1704,6 @@ export default function Profile() {
                         </div>
                       )}
                     </div>
-
-                    {/* Applications Sent */}
-                    <div>
-                      <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 mb-3 text-left">Applications Sent</h3>
-                      {sentRoommateConvs.length === 0 ? (
-                        <p className="text-xs text-neutral-400 italic bg-neutral-50/50 p-3 rounded-xl border border-neutral-100 text-left">No active roommate applications sent.</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {sentRoommateConvs.map(conv => (
-                            <div key={conv.id} className="flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-100 rounded-2xl text-left">
-                              <img src={conv.avatar} alt={conv.name} className="w-10 h-10 rounded-full object-cover" />
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-bold text-neutral-900 text-sm truncate">{conv.name}</h4>
-                                <p className="text-xs text-neutral-500 truncate italic">"{conv.lastMessage}"</p>
-                              </div>
-                              <button 
-                                onClick={() => {
-                                  setSelectedStatModal(null);
-                                  navigate('/messages');
-                                }}
-                                className="px-3 py-1 bg-[#17294F] text-white text-[10px] font-bold rounded-lg uppercase transition cursor-pointer"
-                              >
-                                Chat
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              )}
-
-              {selectedStatModal === 'Invitation' && (
-                loadingRoommates ? (
-                  <div className="flex items-center justify-center h-full text-neutral-400 font-bold gap-2">
-                    <Loader2 className="animate-spin" size={18} /> Loading invitations...
-                  </div>
-                ) : receivedRoommateConvs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center text-neutral-500 space-y-4">
-                    <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
-                       <Users className="w-8 h-8 text-neutral-400" />
-                    </div>
-                    <p className="text-sm font-semibold">No invitations received.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {receivedRoommateConvs.map(conv => (
-                      <div key={conv.id} className="p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-left">
-                        <div className="flex items-center gap-3 mb-3">
-                          <img src={conv.avatar} alt={conv.name} className="w-11 h-11 rounded-full object-cover border border-neutral-200" />
-                          <div>
-                            <h4 className="font-bold text-neutral-900 text-sm">{conv.name}</h4>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-[#2252D6] bg-[#2252D6]/10 px-2 py-0.5 rounded">Roommate Application</span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-neutral-600 bg-white border border-neutral-100/50 p-3 rounded-xl mb-3 italic">
-                          "{conv.lastMessage}"
-                        </p>
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => {
-                              setSelectedStatModal(null);
-                              navigate(`/roommate?search=${encodeURIComponent(conv.name)}`);
-                            }}
-                            className="px-3 py-2 border border-neutral-300 text-neutral-700 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-neutral-50 transition cursor-pointer"
-                          >
-                            Profile
-                          </button>
-                          <button 
-                            onClick={() => {
-                              setSelectedStatModal(null);
-                              navigate('/messages');
-                            }}
-                            className="px-3 py-2 border border-neutral-300 text-neutral-700 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-neutral-50 transition cursor-pointer"
-                          >
-                            Chat
-                          </button>
-                          {conv.status !== 'accepted' ? (
-                            <button 
-                              onClick={() => handleAcceptRoommateInvitation(conv)}
-                              className="flex-1 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-green-700 transition flex items-center justify-center gap-1 cursor-pointer"
-                            >
-                              Accept Request
-                            </button>
-                          ) : (
-                            <span className="flex-1 py-2 bg-green-50 text-green-700 border border-green-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-center flex items-center justify-center">
-                              Matched ðŸŽ‰
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 )
               )}
@@ -2152,8 +1761,8 @@ export default function Profile() {
                   <div className="flex justify-between"><span>Property:</span><span className="font-bold text-neutral-950 truncate max-w-[180px]">{selectedReservationDetail.listingTitle}</span></div>
                   <div className="flex justify-between"><span>Room Layout:</span><span className="text-[#17294F] font-bold">{selectedReservationDetail.roomName}</span></div>
                   <div className="flex justify-between"><span>Move-in Date:</span><span className="font-bold text-neutral-950">{selectedReservationDetail.moveInDate}</span></div>
-                  <div className="flex justify-between"><span>Monthly Rent:</span><span className="font-black text-neutral-950">â‚±{selectedReservationDetail.price.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>Holding Deposit:</span><span className="text-green-600 font-extrabold">â‚±1,000 Paid (Authorized)</span></div>
+                  <div className="flex justify-between"><span>Monthly Rent:</span><span className="font-black text-neutral-950">₱{selectedReservationDetail.price.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Holding Deposit:</span><span className="text-green-600 font-extrabold">₱1,000 Paid (Authorized)</span></div>
                   <div className="flex justify-between"><span>Contract Terms:</span><span>6 Months Minimum</span></div>
                 </div>
 
@@ -2245,7 +1854,7 @@ export default function Profile() {
 
               {/* Body */}
               <p className="text-sm text-neutral-600 leading-relaxed mb-6">
-                Are you sure you want to cancel this {cancellingRes.isApproved ? 'booking' : 'reservation'}? The â‚±1,000 holding deposit will be refunded to your source payment account.
+                Are you sure you want to cancel this {cancellingRes.isApproved ? 'booking' : 'reservation'}? The ₱1,000 holding deposit will be refunded to your source payment account.
               </p>
 
               {/* Actions */}
